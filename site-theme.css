@@ -1,0 +1,744 @@
+﻿/* =========================================================================
+   Paint Events â€” shared site theme
+   Written 2026-08-02, replacing page-theme-v3.css.
+
+   One place for the four things that must look identical on every page:
+     1. the typeface
+     2. the heading scale
+     3. the title gradient
+     4. the page hero
+
+   Loaded last on every page, so it is the final word on all four. Heights here
+   are minimums, never fixed â€” that is what keeps the heroes responsive instead
+   of clipping their own content on short screens.
+   ========================================================================= */
+
+:root {
+  --font-sans: "Manrope", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+
+  /* One heading scale for the whole site. These are the values the home page
+     already renders at, so every other page now matches home exactly. */
+  --h1: clamp(3.15rem, 5.4vw, 5.7rem);
+  --h2: clamp(2.15rem, 3.55vw, 4rem);
+  --h3: clamp(1.35rem, 2vw, 1.75rem);
+
+  /* Titles on light surfaces, and the accent span inside a hero title. */
+  --title-gradient: linear-gradient(105deg, #174f9d 0%, #2176a3 43%, #2f7a4d 76%, #79b765 100%);
+  --hero-gradient: linear-gradient(105deg, #65cf9e 6%, #65bfc2 48%, #7ca8ff 96%);
+
+  --header-h: 92px;
+  /* A full desktop hero on every screen. It is a *minimum*, so long copy or a
+     short window grows it rather than cropping â€” the cap only stops very tall
+     monitors from turning the hero into a wall. */
+  --hero-min: clamp(620px, 92svh, 1080px);
+  --shell: min(100% - 48px, 1540px);
+}
+
+/* ------------------------------------------------------------ typeface --- */
+
+html { font-family: var(--font-sans); }
+body,
+button, input, select, textarea,
+h1, h2, h3, h4, h5, h6,
+.display-title, .booking-title {
+  font-family: var(--font-sans) !important;
+}
+
+/* -------------------------------------------------------- heading scale --- */
+
+h1, h2, h3, h4 { letter-spacing: -.035em; }
+
+h1 { font-size: var(--h1) !important; line-height: .94 !important; letter-spacing: -.045em !important; }
+h2 { font-size: var(--h2) !important; line-height: 1.02 !important; letter-spacing: -.04em !important; }
+h3 { font-size: var(--h3) !important; line-height: 1.16 !important; }
+
+@media (max-width: 760px) {
+  :root { --h1: clamp(2.65rem, 11vw, 4.1rem); --h2: clamp(2rem, 7.5vw, 2.9rem); }
+}
+
+/* The booking form's step headings are interface labels, not page titles, so
+   they keep their own scale â€” the typeface still comes from here. */
+.wrap h2 {
+  font-size: clamp(1.5rem, 2vw, 2.05rem) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -.02em !important;
+}
+
+/* ------------------------------------------------------ gradient titles --- */
+
+/* Section titles on light surfaces carry the gradient. */
+main section h2,
+.section-heading h2,
+.internal-section h2 {
+  background: var(--title-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Cards, dark panels and heroes opt back out â€” a gradient needs a light
+   surface behind it to stay legible. */
+.internal-section-dark h2,
+.final-cta h2,
+.gallery-cta h2,
+.booking-summary h2,
+.service-card h2, .service-card h3,
+.experience-card h2, .experience-card h3,
+.painting-card h3,
+.main-hero h1,
+.internal-page .page-hero h1,
+.gallery-page .gallery-hero-copy h1 {
+  background: none;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+}
+.service-card h2, .service-card h3,
+.experience-card h2, .experience-card h3,
+.painting-card h3,
+.booking-summary h2 { color: inherit; -webkit-text-fill-color: currentColor; }
+
+/* The accent phrase inside a hero title is where the gradient lives. */
+.hero-gradient,
+.main-hero h1 span,
+.internal-page .page-hero h1 span,
+.gallery-page .gallery-hero-copy h1 span {
+  display: inline;
+  background: var(--hero-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* ------------------------------------------------------------- header --- */
+
+.site-header, .gallery-header, .hdr.booking-header {
+  position: fixed !important;
+  inset: 0 0 auto !important;
+  z-index: 1000 !important;
+  min-height: var(--header-h) !important;
+  background: linear-gradient(90deg, rgba(244, 239, 230, .76), rgba(225, 235, 247, .74), rgba(244, 229, 229, .72)) !important;
+  backdrop-filter: blur(22px) saturate(1.18) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.18) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, .64) !important;
+  box-shadow: 0 10px 35px rgba(8, 31, 73, .08) !important;
+}
+.site-header .header-inner, .gallery-header .header-inner, .booking-nav-inner {
+  width: var(--shell) !important;
+  max-width: 1540px !important;
+  min-height: var(--header-h) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.site-header .brand, .gallery-header .brand, .booking-brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-right: auto !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.site-header .brand img, .gallery-header .brand img, .booking-brand img {
+  width: 72px !important;
+  height: 72px !important;
+  object-fit: contain !important;
+  background: transparent !important;
+}
+.site-header .brand span, .gallery-header .brand span, .booking-brand span { display: none !important; }
+.desktop-nav, .booking-desktop-nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(26px, 3vw, 52px) !important;
+  margin-left: auto !important;
+}
+.desktop-nav a, .booking-desktop-nav a {
+  font: 750 .98rem/1 var(--font-sans) !important;
+  color: #071f4a !important;
+  text-decoration: none !important;
+}
+.header-cta, .booking-header-cta {
+  min-height: 54px !important;
+  padding: 0 28px !important;
+  margin-left: 38px !important;
+  border-radius: 999px !important;
+  background: #0b2b61 !important;
+  color: #fff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  border: 1px solid rgba(255, 255, 255, .26) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 12px 25px rgba(8, 31, 73, .14) !important;
+}
+
+/* ================================================================ hero ===
+   Three page types, one hero. The shell only sets a *minimum* height, so a
+   long headline or a small phone grows it rather than cropping it.
+   ======================================================================== */
+
+.internal-page main, .gallery-page main { padding-top: 0 !important; }
+.internal-page .breadcrumbs { display: none !important; }
+
+.main-hero,
+.internal-page .page-hero,
+.gallery-page .gallery-hero {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  background: #071f4a !important;
+  color: #fff !important;
+}
+
+/* The copy column, bottom-aligned above the fold. */
+.main-hero .main-hero-inner,
+.internal-page .page-hero-grid,
+.gallery-page .gallery-hero-grid {
+  position: relative !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  align-items: stretch !important;
+  width: var(--shell) !important;
+  max-width: 1540px !important;
+  min-height: var(--hero-min) !important;
+  margin: 0 auto !important;
+  padding: calc(var(--header-h) + clamp(28px, 6vh, 64px)) 0 clamp(52px, 8vh, 108px) !important;
+  gap: 0 !important;
+  grid-template-columns: none !important;
+}
+
+.main-hero .main-hero-copy,
+.internal-page .page-hero-copy,
+.gallery-page .gallery-hero-copy {
+  position: relative;
+  z-index: 3;
+  width: min(700px, 62%) !important;
+  max-width: 100% !important;
+  color: #fff !important;
+  text-align: left !important;
+}
+
+/* Full-bleed media behind the copy. Covers <img>, <figure> and the gallery's
+   collage wrapper in one pass. */
+.main-hero .main-hero-image,
+.internal-page .page-hero-media,
+.gallery-page .gallery-hero-collage {
+  position: absolute !important;
+  z-index: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  right: auto !important;
+  width: 100vw !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: translateX(-50%) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  clip-path: none !important;
+  overflow: hidden !important;
+}
+.internal-page .page-hero-media img,
+.gallery-page .collage-card-main,
+.gallery-page .collage-card-main img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.gallery-page .collage-card-top,
+.gallery-page .collage-card-bottom,
+.gallery-page .gallery-hero-paint { display: none !important; }
+
+/* Hold the top of the About frame so the crop keeps both faces rather than
+   centring on the table. */
+.about-page .page-hero-media img { object-position: 52% 20% !important; }
+
+/* Two layers over every hero photo, identical on every page:
+   1. a brand colour wash â€” the blue â†’ teal â†’ green the titles use
+   2. a dark scrim over the copy side so the type always clears contrast    */
+.main-hero::before,
+.internal-page .page-hero::before,
+.gallery-page .gallery-hero::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block !important;
+  pointer-events: none;
+  background: linear-gradient(112deg,
+    rgba(23, 79, 157, .58) 0%,
+    rgba(28, 108, 156, .44) 34%,
+    rgba(33, 118, 128, .32) 58%,
+    rgba(47, 122, 77, .28) 80%,
+    rgba(121, 183, 101, .24) 100%);
+}
+
+/* Internal-page heroes use the same left-to-right blue fade as Home and
+   Gallery: strong behind the copy, fully transparent over the photo. */
+.internal-page .page-hero::before {
+  background: linear-gradient(90deg,
+    rgba(23, 79, 157, .66) 0%,
+    rgba(23, 79, 157, .44) 34%,
+    rgba(23, 79, 157, .18) 62%,
+    rgba(23, 79, 157, 0) 100%);
+}
+
+/* The Services audience bar belongs below the hero, not overlapping it. */
+.services-page .audience-selector { margin-top: 0 !important; }
+
+.main-hero .main-hero-overlay,
+.internal-page .page-hero::after,
+.gallery-page .gallery-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(4, 18, 40, .74) 0%, rgba(4, 18, 40, .56) 34%, rgba(4, 18, 40, .18) 66%, rgba(4, 18, 40, .02) 100%);
+}
+/* The copy has to sit above both layers. */
+.main-hero .main-hero-inner,
+.internal-page .page-hero-grid,
+.gallery-page .gallery-hero-grid { z-index: 3 !important; }
+
+.main-hero h1,
+.internal-page .page-hero h1,
+.gallery-page .gallery-hero-copy h1 { margin: 0 0 22px !important; }
+
+.main-hero .eyebrow,
+.internal-page .page-hero .eyebrow,
+.gallery-page .gallery-hero-copy .eyebrow {
+  margin: 0 0 18px !important;
+  color: rgba(255, 255, 255, .82) !important;
+  font-size: .78rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+}
+.main-hero .main-hero-copy > p:not(.eyebrow),
+.internal-page .page-hero-copy > p:not(.eyebrow),
+.gallery-page .gallery-hero-copy > p:not(.eyebrow) {
+  max-width: 620px !important;
+  color: rgba(255, 255, 255, .82) !important;
+  font-size: clamp(1rem, 1.25vw, 1.15rem) !important;
+  line-height: 1.68 !important;
+}
+.main-hero .button-row,
+.internal-page .page-hero .button-row,
+.gallery-page .gallery-hero-copy .button-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 14px !important;
+  margin-top: clamp(22px, 3vh, 34px) !important;
+}
+.internal-page .page-hero .button,
+.gallery-page .gallery-scroll-link {
+  min-height: 52px !important;
+  padding: 0 26px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  border-radius: 999px !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, .58) !important;
+  background: rgba(255, 255, 255, .14) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .5) !important;
+  transition: background .25s ease, transform .25s ease !important;
+}
+.internal-page .page-hero .button:hover,
+.gallery-page .gallery-scroll-link:hover {
+  background: rgba(255, 255, 255, .24) !important;
+  transform: translateY(-2px) !important;
+}
+.internal-page .page-hero .button-primary,
+.internal-page .page-hero .button.button-primary {
+  background: rgba(255, 255, 255, .95) !important;
+  color: #08234d !important;
+  border-color: transparent !important;
+}
+.internal-page .page-hero .button-primary:hover { background: #fff !important; }
+
+/* Show client logos in their own colours on internal pages, as before. */
+.internal-page .client-logos img,
+.internal-page .trust-logo-marquee img {
+  filter: none !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  background: transparent !important;
+}
+
+/* --------------------------------------------------------- responsive --- */
+
+@media (max-width: 1100px) {
+  .main-hero .main-hero-copy,
+  .internal-page .page-hero-copy,
+  .gallery-page .gallery-hero-copy { width: min(700px, 74%) !important; }
+}
+
+@media (max-width: 820px) {
+  :root {
+    --header-h: 76px;
+    --hero-min: clamp(520px, 88svh, 780px);
+    --shell: min(100% - 32px, 1540px);
+  }
+  .site-header .brand img, .gallery-header .brand img, .booking-brand img { width: 58px !important; height: 58px !important; }
+  .desktop-nav, .booking-desktop-nav, .header-cta, .booking-header-cta { display: none !important; }
+
+  .main-hero .main-hero-copy,
+  .internal-page .page-hero-copy,
+  .gallery-page .gallery-hero-copy { width: 100% !important; }
+
+  /* Portrait screens read better with the scrim rising from the bottom. */
+  .main-hero .main-hero-overlay,
+  .internal-page .page-hero::after,
+  .gallery-page .gallery-hero::after {
+    background: linear-gradient(0deg, rgba(3, 18, 44, .88) 0%, rgba(3, 18, 44, .62) 44%, rgba(3, 18, 44, .2) 78%, rgba(3, 18, 44, .06) 100%);
+  }
+  .main-hero::before,
+  .internal-page .page-hero::before,
+  .gallery-page .gallery-hero::before {
+    background: linear-gradient(160deg,
+      rgba(23, 79, 157, .5) 0%,
+      rgba(28, 108, 156, .38) 40%,
+      rgba(47, 122, 77, .3) 76%,
+      rgba(121, 183, 101, .26) 100%);
+  }
+  .main-hero .main-hero-image,
+  .internal-page .page-hero-media img { object-position: 50% 38% !important; }
+}
+
+@media (max-width: 520px) {
+  :root { --hero-min: clamp(440px, 78svh, 620px); }
+  .main-hero .main-hero-inner,
+  .internal-page .page-hero-grid,
+  .gallery-page .gallery-hero-grid {
+    padding: calc(var(--header-h) + 28px) 0 44px !important;
+  }
+  .internal-page .page-hero .button,
+  .gallery-page .gallery-scroll-link { width: 100% !important; justify-content: center !important; }
+}
+
+/* Short landscape phones: never let the hero swallow the whole screen. */
+@media (max-height: 520px) and (orientation: landscape) {
+  :root { --hero-min: 460px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .internal-page .page-hero .button,
+  .gallery-page .gallery-scroll-link { transition: none !important; }
+}
+
+/* FINAL internal hero correction: Services, FAQ and About only. */
+body.services-page .page-hero::before,
+body.faq-page .page-hero::before,
+body.about-page .page-hero::before {
+  background: linear-gradient(90deg,
+    rgba(10, 55, 125, .88) 0%,
+    rgba(20, 91, 171, .62) 34%,
+    rgba(32, 112, 185, .28) 58%,
+    rgba(32, 112, 185, 0) 82%) !important;
+}
+body.services-page .page-hero::after,
+body.faq-page .page-hero::after,
+body.about-page .page-hero::after {
+  background: linear-gradient(90deg,
+    rgba(4, 18, 40, .62) 0%,
+    rgba(4, 18, 40, .38) 34%,
+    rgba(4, 18, 40, .1) 60%,
+    rgba(4, 18, 40, 0) 82%) !important;
+}
+body.services-page .audience-selector {
+  margin-top: 0 !important;
+  transform: none !important;
+}
+/* FINAL hero layer and height fix — all pages. */
+/* Internal media used to live inside a z-index:3 stacking context, which put
+   the photograph in front of both overlays. Keep only the copy above them. */
+.internal-page .page-hero-grid {
+  z-index: auto !important;
+}
+.internal-page .page-hero-copy {
+  position: relative !important;
+  z-index: 3 !important;
+}
+.internal-page .page-hero-media {
+  z-index: 0 !important;
+}
+
+/* Match the exact Home hero overlay on every internal-page and Gallery hero. */
+.internal-page .page-hero::before,
+.gallery-page .gallery-hero::before {
+  background: transparent !important;
+}
+.internal-page .page-hero::after,
+.gallery-page .gallery-hero::after {
+  background: linear-gradient(90deg,
+    rgba(4, 18, 40, .96) 0%,
+    rgba(4, 18, 40, .84) 35%,
+    rgba(4, 18, 40, .24) 68%,
+    rgba(4, 18, 40, .04) 100%) !important;
+}
+
+/* All desktop heroes use the same full-height canvas. */
+.main-hero,
+.internal-page .page-hero,
+.gallery-page .gallery-hero,
+.main-hero .main-hero-inner,
+.internal-page .page-hero-grid,
+.gallery-page .gallery-hero-grid {
+  min-height: max(680px, 92svh) !important;
+}
+
+/* The Services selector starts after the hero. */
+body.services-page .audience-selector {
+  margin-top: 0 !important;
+  transform: none !important;
+}
+
+@media (max-width: 820px) {
+  .internal-page .page-hero::after,
+  .gallery-page .gallery-hero::after {
+    background: linear-gradient(180deg,
+      rgba(4, 18, 40, .30) 0%,
+      rgba(4, 18, 40, .60) 48%,
+      rgba(4, 18, 40, .94) 100%) !important;
+  }
+  .main-hero,
+  .internal-page .page-hero,
+  .gallery-page .gallery-hero,
+  .main-hero .main-hero-inner,
+  .internal-page .page-hero-grid,
+  .gallery-page .gallery-hero-grid {
+    min-height: max(620px, 88svh) !important;
+  }
+}
+/* EXACT unified hero height — match Services across every page. */
+@media (min-width: 821px) {
+  .main-hero,
+  .internal-page .page-hero,
+  .gallery-page .gallery-hero {
+    width: 100% !important;
+    height: 100svh !important;
+    min-height: 100svh !important;
+    max-height: 100svh !important;
+  }
+  .main-hero .main-hero-inner,
+  .internal-page .page-hero-grid,
+  .gallery-page .gallery-hero-grid {
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+  }
+}
+/* Hero title scale and horizontal position refinement. */
+:root {
+  --h1: clamp(2.75rem, 4.7vw, 5rem);
+}
+.main-hero .main-hero-inner,
+.internal-page .page-hero-grid,
+.gallery-page .gallery-hero-grid {
+  width: min(calc(100% - 96px), 1540px) !important;
+}
+@media (max-width: 820px) {
+  :root { --h1: clamp(2.35rem, 9.5vw, 3.6rem); }
+  .main-hero .main-hero-inner,
+  .internal-page .page-hero-grid,
+  .gallery-page .gallery-hero-grid {
+    width: min(calc(100% - 32px), 1540px) !important;
+  }
+}
+/* Home hero: fixed three-line title, balanced vertical centre and CTA gap. */
+@media (min-width: 821px) {
+  .main-hero .main-hero-inner {
+    justify-content: center !important;
+    align-items: stretch !important;
+    padding-top: var(--header-h) !important;
+    padding-bottom: 0 !important;
+  }
+  .main-hero .hero-actions {
+    margin-top: 52px !important;
+  }
+}
+/* Hero content cleanup: title and CTA only on every page. */
+.main-hero .eyebrow,
+.main-hero .hero-lead,
+.main-hero .hero-support,
+.main-hero .hero-proof,
+.internal-page .page-hero-copy > .eyebrow,
+.internal-page .page-hero-copy > p:not(.eyebrow),
+.gallery-page .gallery-hero-copy > .eyebrow,
+.gallery-page .gallery-hero-copy > p:not(.eyebrow) {
+  display: none !important;
+}
+/* Vertically centre title-and-CTA blocks in every desktop hero. */
+@media (min-width: 821px) {
+  .main-hero .main-hero-inner,
+  .internal-page .page-hero-grid,
+  .gallery-page .gallery-hero-grid {
+    justify-content: center !important;
+    padding-top: var(--header-h) !important;
+    padding-bottom: 0 !important;
+  }
+}
+/* Lower hero CTAs without moving the titles. */
+.main-hero .hero-actions,
+.internal-page .page-hero .button-row,
+.gallery-page .gallery-hero-copy .button-row {
+  margin-top: 64px !important;
+}
+/* Hero entrance interactions and centred CTA placement. */
+@keyframes hero-title-enter {
+  from { opacity: 0; transform: translate3d(-90px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes hero-cta-enter {
+  from { opacity: 0; transform: translate3d(-50%, 64px, 0); }
+  to { opacity: 1; transform: translate3d(-50%, 0, 0); }
+}
+
+.main-hero h1,
+.internal-page .page-hero h1,
+.gallery-page .gallery-hero-copy h1 {
+  animation: hero-title-enter .85s cubic-bezier(.22, .72, .18, 1) both;
+}
+
+@media (min-width: 821px) {
+  .main-hero .main-hero-copy,
+  .internal-page .page-hero-copy,
+  .gallery-page .gallery-hero-copy {
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+  .main-hero h1,
+  .internal-page .page-hero h1,
+  .gallery-page .gallery-hero-copy h1 {
+    position: relative !important;
+    z-index: 3 !important;
+    width: min(700px, 62%) !important;
+  }
+  .main-hero .hero-actions,
+  .internal-page .page-hero .button-row,
+  .gallery-page .gallery-hero-copy .button-row {
+    position: absolute !important;
+    z-index: 4 !important;
+    left: 50% !important;
+    bottom: clamp(58px, 8vh, 92px) !important;
+    width: max-content !important;
+    max-width: calc(100% - 48px) !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    transform: translateX(-50%);
+    animation: hero-cta-enter .85s .18s cubic-bezier(.22, .72, .18, 1) both;
+  }
+}
+
+@media (max-width: 820px) {
+  .main-hero .hero-actions,
+  .internal-page .page-hero .button-row,
+  .gallery-page .gallery-hero-copy .button-row {
+    animation: hero-title-enter .75s .12s cubic-bezier(.22, .72, .18, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-hero h1,
+  .internal-page .page-hero h1,
+  .gallery-page .gallery-hero-copy h1,
+  .main-hero .hero-actions,
+  .internal-page .page-hero .button-row,
+  .gallery-page .gallery-hero-copy .button-row {
+    animation: none !important;
+  }
+}
+
+/* Shared scroll entrance for every non-hero section. */
+.scroll-section-reveal {
+  opacity: 0;
+  transform: translate3d(0, 72px, 0);
+  transition:
+    opacity .78s cubic-bezier(.22, .72, .18, 1),
+    transform .92s cubic-bezier(.22, .72, .18, 1);
+  will-change: opacity, transform;
+}
+.scroll-section-reveal.scroll-section-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-section-reveal,
+  .scroll-section-reveal.scroll-section-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+/* Smooth FAQ accordion interaction. */
+.faq-page .faq-category-list details {
+  overflow: hidden;
+  transition: border-color .28s ease, box-shadow .32s ease, background-color .32s ease;
+}
+.faq-page .faq-category-list details[open] {
+  border-color: rgba(23, 79, 157, .28);
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 14px 34px rgba(7, 31, 74, .08);
+}
+.faq-page .faq-category-list summary {
+  transition: color .28s ease, background-color .28s ease;
+}
+.faq-page .faq-category-list summary::after {
+  display: inline-block;
+  transition: transform .4s cubic-bezier(.22, .72, .18, 1), color .28s ease;
+}
+.faq-page .faq-category-list details[open] summary::after {
+  content: "+";
+  transform: rotate(45deg);
+}
+.faq-page .faq-category-list details p {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity .32s ease .08s, transform .42s cubic-bezier(.22, .72, .18, 1) .04s;
+}
+.faq-page .faq-category-list details[open] p,
+.faq-page .faq-category-list details.is-opening p {
+  opacity: 1;
+  transform: translateY(0);
+}
+.faq-page .faq-category-list details.is-closing p {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition-delay: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-page .faq-category-list details,
+  .faq-page .faq-category-list summary,
+  .faq-page .faq-category-list summary::after,
+  .faq-page .faq-category-list details p {
+    transition: none !important;
+  }
+}
+
+
+

@@ -4,8 +4,9 @@
     {
       "name": "static-preview",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["tmp/static-server.js"],
-      "port": 4173
+      "runtimeArgs": ["scripts/serve.mjs"],
+      "port": 4173,
+      "autoPort": true
     }
   ]
 }

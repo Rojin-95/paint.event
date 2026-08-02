@@ -1,45 +1,269 @@
-﻿const header = document.querySelector('#site-header');
+﻿document.documentElement.classList.add('js');
+
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const header = document.querySelector('#site-header');
 const menuButton = document.querySelector('.menu-toggle');
 const mobileMenu = document.querySelector('#mobile-menu');
+const mobileStickyCta = document.querySelector('.mobile-sticky-cta');
 
-const setCursorPressed = pressed => document.documentElement.classList.toggle('cursor-pressed', pressed);
-window.addEventListener('pointerdown', () => setCursorPressed(true), { passive: true });
-window.addEventListener('pointerup', () => setCursorPressed(false), { passive: true });
-window.addEventListener('pointercancel', () => setCursorPressed(false), { passive: true });
-window.addEventListener('blur', () => setCursorPressed(false));
-const setHeaderState = () => {
-  if (!header) return;
-  const heroShell = document.querySelector('.hero-scroll-shell');
-  const heroRunway = heroShell ? Math.max(heroShell.offsetHeight - window.innerHeight, 1) : 1;
-  const revealAt = heroShell ? heroShell.offsetTop + (heroRunway * 0.80) : 1;
-  const isVisible = window.scrollY >= revealAt;
-  header.classList.toggle('is-visible', isVisible);
-  header.classList.toggle('scrolled', isVisible);
-};
+function setHeaderState() {
+  header?.classList.toggle('scrolled', window.scrollY > 32);
+  const home = document.querySelector('#home');
+  mobileStickyCta?.classList.toggle('is-visible', Boolean(home && window.scrollY >= home.offsetTop + home.offsetHeight * .72));
+}
+
+function closeMenu({ restoreFocus = false } = {}) {
+  if (!menuButton || !mobileMenu) return;
+  mobileMenu.hidden = true;
+  menuButton.setAttribute('aria-expanded', 'false');
+  menuButton.setAttribute('aria-label', 'Open menu');
+  header?.classList.remove('menu-open');
+  if (restoreFocus) menuButton.focus();
+}
+
 setHeaderState();
 window.addEventListener('scroll', setHeaderState, { passive: true });
 
 menuButton?.addEventListener('click', () => {
-  const open = menuButton.getAttribute('aria-expanded') === 'true';
-  menuButton.setAttribute('aria-expanded', String(!open));
-  menuButton.setAttribute('aria-label', open ? 'Open menu' : 'Close menu');
-  mobileMenu.classList.toggle('open', !open);
+  const willOpen = menuButton.getAttribute('aria-expanded') !== 'true';
+  mobileMenu.hidden = !willOpen;
+  menuButton.setAttribute('aria-expanded', String(willOpen));
+  menuButton.setAttribute('aria-label', willOpen ? 'Close menu' : 'Open menu');
+  header?.classList.toggle('menu-open', willOpen);
+  if (willOpen) mobileMenu.querySelector('a')?.focus();
 });
-mobileMenu?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-  mobileMenu.classList.remove('open');
-  menuButton.setAttribute('aria-expanded', 'false');
-  menuButton.setAttribute('aria-label', 'Open menu');
-}));
 
+mobileMenu?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => closeMenu()));
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && menuButton?.getAttribute('aria-expanded') === 'true') closeMenu({ restoreFocus: true });
+});
+
+/* Opening scroll-controlled video */
+function initializeOpeningVideo() {
+  const shell = document.querySelector('.intro-scroll-shell');
+  const media = document.querySelector('#intro-media');
+  const video = document.querySelector('#hero-paint-video');
+  const status = document.querySelector('#video-status');
+  const choice = document.querySelector('#intro-choice');
+  const startButton = document.querySelector('#scroll-to-paint');
+  const progressWrap = document.querySelector('.intro-progress');
+  const progressBar = document.querySelector('#intro-progress-bar');
+  const completeLink = document.querySelector('#intro-complete');
+  const flyingLogo = document.querySelector('#intro-logo-flight');
+  const headerBrand = document.querySelector('.site-header .brand');
+  if (!shell || !media || !video) return;
+
+  let duration = 0;
+  let displayedTime = 0;
+  let frame = 0;
+  let ready = false;
+
+  const getProgress = () => {
+    if (prefersReducedMotion.matches) return 0;
+    const rect = shell.getBoundingClientRect();
+    const runway = Math.max(shell.offsetHeight - window.innerHeight, 1);
+    return Math.min(1, Math.max(0, -rect.top / runway));
+  };
+
+  function render() {
+    frame = 0;
+    const progress = getProgress();
+    choice?.classList.toggle('is-hidden', progress > .075);
+    progressWrap?.classList.toggle('is-visible', progress > .075 && progress < .94);
+    completeLink?.classList.toggle('is-visible', progress > .91);
+    if (progressBar) progressBar.style.transform = `scaleX(${progress.toFixed(4)})`;
+    if (flyingLogo && headerBrand) {
+      const revealStart = .79;
+      const travelStart = .87;
+      const travelEnd = .985;
+      const reveal = Math.min(1, Math.max(0, (progress - revealStart) / .045));
+      const travel = Math.min(1, Math.max(0, (progress - travelStart) / (travelEnd - travelStart)));
+      const easedTravel = 1 - Math.pow(1 - travel, 3);
+      const brandRect = headerBrand.getBoundingClientRect();
+      const startSize = Math.min(window.innerWidth * .28, window.innerHeight * .38, 360);
+      const endSize = Math.max(brandRect.width, brandRect.height);
+      const startX = (window.innerWidth - startSize) / 2;
+      const startY = (window.innerHeight - startSize) / 2;
+      const endX = brandRect.left + (brandRect.width - endSize) / 2;
+      const endY = brandRect.top + (brandRect.height - endSize) / 2;
+      const size = startSize + (endSize - startSize) * easedTravel;
+      const x = startX + (endX - startX) * easedTravel;
+      const y = startY + (endY - startY) * easedTravel;
+
+      flyingLogo.style.setProperty('--flight-x', `${x}px`);
+      flyingLogo.style.setProperty('--flight-y', `${y}px`);
+      flyingLogo.style.setProperty('--flight-size', `${size}px`);
+      flyingLogo.style.setProperty('--flight-opacity', `${reveal * (travel < .94 ? 1 : Math.max(0, (1 - travel) / .06))}`);
+      flyingLogo.classList.toggle('is-active', progress > revealStart && progress < 1);
+      headerBrand.style.setProperty('--brand-flight-opacity', progress >= travelStart && progress < travelEnd ? `${Math.max(0, (travel - .72) / .28)}` : '1');
+    }
+
+    if (!ready || prefersReducedMotion.matches || !duration) return;
+    const safeDuration = Math.max(duration - .05, 0);
+    const target = safeDuration * progress;
+    displayedTime += (target - displayedTime) * .16;
+    if (Math.abs(target - displayedTime) < .008) displayedTime = target;
+    try {
+      if (!video.seeking && Math.abs(video.currentTime - displayedTime) > .01) video.currentTime = displayedTime;
+    } catch (error) {
+      /* A rejected seek is harmless; the next frame retries. */
+    }
+    if (Math.abs(target - displayedTime) > .01) requestRender();
+  }
+
+  function requestRender() {
+    if (!frame) frame = requestAnimationFrame(render);
+  }
+
+  function markReady() {
+    if (ready) return;
+    ready = true;
+    duration = Number.isFinite(video.duration) ? video.duration : 0;
+    media.classList.add('is-ready');
+    media.setAttribute('aria-busy', 'false');
+    status.textContent = '';
+    video.pause();
+    if (prefersReducedMotion.matches && duration) {
+      try { video.currentTime = Math.max(duration - .05, 0); } catch (error) { /* Poster remains as fallback. */ }
+    }
+    requestRender();
+  }
+
+  video.addEventListener('loadedmetadata', markReady, { once: true });
+  video.addEventListener('loadeddata', markReady, { once: true });
+  video.addEventListener('error', () => {
+    media.classList.add('has-video-error');
+    media.setAttribute('aria-busy', 'false');
+    status.textContent = 'The video could not load. Both website choices remain available.';
+  }, { once: true });
+  if (video.readyState >= 1) markReady();
+
+  startButton?.addEventListener('click', () => {
+    const target = prefersReducedMotion.matches
+      ? document.querySelector('#home')?.offsetTop || shell.offsetTop + shell.offsetHeight
+      : shell.offsetTop + Math.min(window.innerHeight * .72, Math.max(shell.offsetHeight - window.innerHeight, 1));
+    window.scrollTo({ top: target, behavior: prefersReducedMotion.matches ? 'auto' : 'smooth' });
+  });
+
+  window.addEventListener('scroll', requestRender, { passive: true });
+  window.addEventListener('resize', requestRender, { passive: true });
+  prefersReducedMotion.addEventListener?.('change', requestRender);
+  requestRender();
+}
+
+initializeOpeningVideo();
+
+/* Calendar and homepage request estimator */
+const calendarGrid = document.querySelector('#booking-calendar');
+const calendarMonthLabel = document.querySelector('#calendar-month');
+const calendarStatus = document.querySelector('#calendar-status');
+const calendarPrev = document.querySelector('#calendar-prev');
+const calendarNext = document.querySelector('#calendar-next');
+const dateInput = document.querySelector('#event-date');
+const estimatorForm = document.querySelector('#estimator-form');
 const guestInput = document.querySelector('#guest-count');
 const durationInput = document.querySelector('#duration');
-const totalOutput = document.querySelector('#estimate-total');
+const estimateTotal = document.querySelector('#estimate-total');
 const guestBreakdown = document.querySelector('#guest-breakdown');
-const durationBreakdown = document.querySelector('#duration-breakdown');
-const discountRow = document.querySelector('#discount-row');
-const discountBreakdown = document.querySelector('#discount-breakdown');
-const form = document.querySelector('#estimator-form');
-const errorOutput = document.querySelector('#form-error');
+const formError = document.querySelector('#form-error');
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const tomorrow = new Date(today);
+tomorrow.setDate(tomorrow.getDate() + 1);
+let visibleMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+let selectedDate = '';
+
+const toDateValue = date => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateValue = value => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+  return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
+};
+
+if (dateInput) dateInput.min = toDateValue(tomorrow);
+
+function renderCalendar() {
+  if (!calendarGrid || !calendarMonthLabel) return;
+  try {
+    calendarGrid.replaceChildren();
+    calendarMonthLabel.textContent = visibleMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'America/Los_Angeles' });
+    const firstWeekday = visibleMonth.getDay();
+    const daysInMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0).getDate();
+    const pendingDate = localStorage.getItem('paintEventsPendingDate') || '';
+
+    for (let index = 0; index < firstWeekday; index += 1) {
+      const spacer = document.createElement('span');
+      spacer.className = 'calendar-empty';
+      spacer.setAttribute('role', 'gridcell');
+      calendarGrid.append(spacer);
+    }
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const date = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), day);
+      const value = toDateValue(date);
+      const isUnavailable = date < tomorrow;
+      const isSelected = value === selectedDate;
+      const isPending = value === pendingDate && !isSelected;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'calendar-day';
+      button.textContent = String(day);
+      button.disabled = isUnavailable;
+      button.setAttribute('role', 'gridcell');
+      button.setAttribute('aria-selected', String(isSelected));
+      const spokenDate = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      const state = isUnavailable ? 'unavailable' : isSelected ? 'selected' : isPending ? 'pending request on this device' : 'requestable';
+      button.setAttribute('aria-label', `${spokenDate}, ${state}`);
+      if (isSelected) button.classList.add('is-selected');
+      if (isPending) button.classList.add('is-pending');
+      if (!isUnavailable) button.addEventListener('click', () => selectDate(value, { announce: true }));
+      calendarGrid.append(button);
+    }
+
+    const currentMonth = today.getFullYear() * 12 + today.getMonth();
+    const shownMonth = visibleMonth.getFullYear() * 12 + visibleMonth.getMonth();
+    calendarPrev.disabled = shownMonth <= currentMonth;
+    calendarNext.disabled = shownMonth >= currentMonth + 18;
+    calendarStatus.textContent = selectedDate
+      ? `${parseDateValue(selectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} selected for your request. This is not a confirmed reservation.`
+      : 'Future dates are requestable. Select one to begin; Paint Events will review availability.';
+  } catch (error) {
+    calendarGrid.innerHTML = '<p role="alert">The visual calendar is unavailable. Use the preferred date field in the form.</p>';
+    calendarStatus.textContent = 'Calendar error. The date field remains available.';
+  }
+}
+
+function selectDate(value, { announce = false } = {}) {
+  selectedDate = value;
+  if (dateInput) {
+    dateInput.value = value;
+    dateInput.setAttribute('aria-invalid', 'false');
+  }
+  if (announce && calendarStatus) calendarStatus.textContent = 'Preferred date selected. Availability will be reviewed after your request.';
+  renderCalendar();
+}
+
+calendarPrev?.addEventListener('click', () => {
+  visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+  renderCalendar();
+});
+calendarNext?.addEventListener('click', () => {
+  visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+  renderCalendar();
+});
+dateInput?.addEventListener('change', () => {
+  const parsed = parseDateValue(dateInput.value);
+  if (!parsed) return;
+  visibleMonth = new Date(parsed.getFullYear(), parsed.getMonth(), 1);
+  selectDate(dateInput.value);
+});
+renderCalendar();
 
 function rateFor(guests, duration) {
   if (!guests || guests < 4) return 0;
@@ -48,439 +272,72 @@ function rateFor(guests, duration) {
 }
 
 function updateEstimate() {
+  if (!guestInput || !durationInput) return;
   const guests = Number(guestInput.value);
   const duration = Number(durationInput.value);
   const rate = rateFor(guests, duration);
   const base = guests * rate;
-  const hasDiscount = guests >= 60;
-  const discount = hasDiscount ? Math.round(base * 0.1) : 0;
+  const discount = guests >= 60 ? Math.round(base * .1) : 0;
   const subtotal = base - discount;
-  guestBreakdown.textContent = rate ? `${guests} guests x $${rate}` : 'Enter 4-100 guests';
-  durationBreakdown.textContent = `${duration} minutes`;
-  discountRow.hidden = !hasDiscount;
-  discountBreakdown.textContent = hasDiscount ? `-$${discount.toLocaleString()} (10%)` : '-';
-  totalOutput.textContent = rate ? `$${subtotal.toLocaleString()}` : '-';
+  if (estimateTotal) estimateTotal.textContent = rate ? `$${subtotal.toLocaleString()}` : '—';
+  if (guestBreakdown) guestBreakdown.textContent = rate
+    ? `${guests} guests × $${rate} · ${duration} minutes${discount ? ' · 10% group discount' : ''}`
+    : 'Enter 4–100 guests';
 }
 
 guestInput?.addEventListener('input', updateEstimate);
 durationInput?.addEventListener('change', updateEstimate);
 updateEstimate();
 
-form?.addEventListener('submit', event => {
+function setFieldError(field, message) {
+  if (!field) return;
+  field.setAttribute('aria-invalid', String(Boolean(message)));
+  const error = document.querySelector(`#${field.id}-error`);
+  if (error) error.textContent = message;
+}
+
+estimatorForm?.addEventListener('submit', event => {
   event.preventDefault();
-  const type = document.querySelector('#event-type').value;
+  const typeField = document.querySelector('#event-type');
+  const zipField = document.querySelector('#zip-code');
+  const type = typeField.value;
   const guests = Number(guestInput.value);
-  const date = document.querySelector('#event-date').value;
-  const zip = document.querySelector('#zip-code').value.trim();
+  const date = dateInput.value;
+  const zip = zipField.value.trim();
   const duration = Number(durationInput.value);
-  const errors = [];
-  if (!type) errors.push('choose an event type');
-  if (guests < 4 || guests > 100) errors.push('enter 4-100 guests');
-  if (!date) errors.push('choose a date');
-  if (!/^\d{5}$/.test(zip)) errors.push('enter a five-digit ZIP code');
-  if (errors.length) {
-    errorOutput.textContent = `Please ${errors.join(', ')}.`;
-    form.querySelector(':invalid')?.focus();
+
+  setFieldError(typeField, type ? '' : 'Choose an event type.');
+  setFieldError(guestInput, guests >= 4 && guests <= 100 ? '' : 'Enter between 4 and 100 guests.');
+  setFieldError(dateInput, date && parseDateValue(date) >= tomorrow ? '' : 'Choose a future preferred date.');
+  setFieldError(zipField, /^\d{5}$/.test(zip) ? '' : 'Enter a five-digit ZIP code.');
+
+  const invalidField = estimatorForm.querySelector('[aria-invalid="true"]');
+  if (invalidField) {
+    formError.textContent = 'Review the highlighted fields before continuing.';
+    invalidField.focus();
     return;
   }
-  errorOutput.textContent = '';
+
+  formError.textContent = '';
   const estimate = { type, guests, date, zip, duration };
   sessionStorage.setItem('paintEventsEstimate', JSON.stringify(estimate));
   const params = new URLSearchParams(estimate);
   window.location.href = `paint-events-booking-v2.html?${params.toString()}`;
 });
 
-const dateInput = document.querySelector('#event-date');
-if (dateInput) {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  dateInput.min = tomorrow.toISOString().split('T')[0];
-}
-
-const revealTargets = document.querySelectorAll('.legacy-reveal-disabled');
-if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+/* Progressive disclosure without hiding content from reduced-motion users */
+const revealTargets = document.querySelectorAll('.service-card, .process-grid li, .booking-layout, .corporate-layout, .gallery-grid, .about-layout, .review-card');
+if ('IntersectionObserver' in window && !prefersReducedMotion.matches) {
   revealTargets.forEach(target => target.classList.add('reveal'));
-  const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-    if (entry.isIntersecting) {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
       entry.target.classList.add('in-view');
       observer.unobserve(entry.target);
-    }
-  }), { threshold: 0.12 });
+    });
+  }, { threshold: .1 });
   revealTargets.forEach(target => observer.observe(target));
 }
-
-const aboutSection = document.querySelector('.about-section');
-if (aboutSection && 'IntersectionObserver' in window) {
-  const aboutObserver = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      aboutSection.classList.add('about-in-view');
-      aboutObserver.unobserve(aboutSection);
-    }
-  }, { threshold: 0.18 });
-  aboutObserver.observe(aboutSection);
-} else {
-  aboutSection?.classList.add('about-in-view');
-}
-
-
-function initializeScrollVideo() {
-  const shell = document.querySelector('.hero-scroll-shell');
-  const hero = document.querySelector('#scroll-video-hero');
-  const video = document.querySelector('#hero-paint-video');
-  const visual = document.querySelector('.hero-video-visual');
-  const loading = document.querySelector('#video-loading');
-  const cue = document.querySelector('#video-swipe-cue');
-  const copy = document.querySelector('#hero-copy');
-  const sideImage = document.querySelector('#hero-side-image');
-  const actions = document.querySelector('#hero-actions');
-  const skipHeroButton = document.querySelector('#hero-skip-scroll');
-  const flightLogo = document.querySelector('#hero-logo-flight');
-  const navLogo = document.querySelector('#site-header .brand img');
-  if (!shell || !hero || !video || !visual) return;
-
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let shouldSkipIntro = new URLSearchParams(window.location.search).get('skipIntro') === '1';
-  try {
-    shouldSkipIntro = shouldSkipIntro || sessionStorage.getItem('paintEventsIntroSeen') === '1';
-    sessionStorage.setItem('paintEventsIntroSeen', '1');
-  } catch (error) {
-    // Session storage can be unavailable in privacy-restricted contexts.
-  }
-  const smoothing = 0.12;
-  let ready = false;
-  let displayedTime = 0;
-  let rafId = 0;
-  let loopActive = false;
-  let cueHidden = false;
-
-  if (shouldSkipIntro) {
-    video.pause();
-    video.style.visibility = 'hidden';
-    visual.style.background = '#0b2858';
-    visual.classList.add('is-ready', 'is-skip-final');
-    visual.setAttribute('aria-busy', 'false');
-    if (loading) loading.textContent = '';
-    ready = true;
-  }
-
-  // Progress through the pinned scroll range: 0 at the moment the hero locks
-  // in place, 1 once the shell's extra scroll runway has been used up.
-  function getProgress() {
-    const rect = shell.getBoundingClientRect();
-    const heroHeight = innerHeight;
-    const scrollableHeight = Math.max(shell.offsetHeight - heroHeight, 1);
-    const scrolledIntoShell = -rect.top;
-    return Math.min(1, Math.max(0, scrolledIntoShell / scrollableHeight));
-  }
-
-  let magnetTimer = 0;
-  let lastMagnetProgress = getProgress();
-  let magnetDirection = 1;
-
-  function scheduleHeroMagnet() {
-    const progress = getProgress();
-    const movement = progress - lastMagnetProgress;
-    if (Math.abs(movement) > 0.0001) magnetDirection = movement > 0 ? 1 : -1;
-    lastMagnetProgress = progress;
-    clearTimeout(magnetTimer);
-
-    if (progress > 0.795 && progress < 0.905) {
-      magnetTimer = window.setTimeout(() => {
-        const targetProgress = magnetDirection > 0 ? 0.905 : 0.795;
-        const shellTop = window.scrollY + shell.getBoundingClientRect().top;
-        const runway = Math.max(shell.offsetHeight - window.innerHeight, 1);
-        window.scrollTo({ top: shellTop + (runway * targetProgress), behavior: 'smooth' });
-      }, 110);
-    }
-  }
-
-  window.addEventListener('scroll', scheduleHeroMagnet, { passive: true });
-  function animateVideoTime() {
-    const duration = video.duration || 10;
-    const safeMax = Math.max(duration - 0.05, 0);
-    const progress = getProgress();
-    skipHeroButton?.classList.toggle('is-hidden', progress > 0.04);
-
-    // The logo appears on the completed blue frame, grows with the hero,
-    // then follows a reversible path into the navbar as the content arrives.
-    const logoAppear = Math.min(1, Math.max(0, (progress - 0.56) / 0.06));
-    const logoScaleProgress = Math.min(1, Math.max(0, (progress - 0.56) / 0.16));
-    const logoTravel = Math.min(1, Math.max(0, (progress - 0.79) / 0.08));
-    const easedTravel = logoTravel * logoTravel * (3 - (2 * logoTravel));
-    if (flightLogo && navLogo) {
-      const targetSize = navLogo.offsetWidth || (innerWidth <= 560 ? 56 : 72);
-      const headerHeight = innerWidth <= 560 ? 72 : 86;
-      const targetLeft = (innerWidth <= 1120 ? 16 : 24) + (targetSize / 2);
-      const targetTop = headerHeight / 2;
-      const centeredSize = (innerWidth <= 560 ? 208 : 256) + (logoScaleProgress * (innerWidth <= 560 ? 84 : 156));
-      const currentSize = centeredSize + ((targetSize - centeredSize) * easedTravel);
-      const currentLeft = (innerWidth / 2) + ((targetLeft - (innerWidth / 2)) * easedTravel);
-      const currentTop = (innerHeight / 2) + ((targetTop - (innerHeight / 2)) * easedTravel);
-      const travelFade = logoTravel > 0.9 ? Math.max(0, (1 - logoTravel) / 0.1) : 1;
-      flightLogo.style.left = `${currentLeft.toFixed(2)}px`;
-      flightLogo.style.top = `${currentTop.toFixed(2)}px`;
-      flightLogo.style.width = `${currentSize.toFixed(2)}px`;
-      flightLogo.style.height = `${currentSize.toFixed(2)}px`;
-      flightLogo.style.opacity = `${(logoAppear * travelFade).toFixed(4)}`;
-      flightLogo.style.transform = 'translate(-50%,-50%)';
-      header?.classList.toggle('logo-landed', logoTravel >= 0.98);
-    }
-    const videoProgress = Math.min(progress / 0.56, 1);
-    const targetTime = videoProgress * safeMax;
-    // First grow proportionally until the video reaches the full hero height.
-    const expansionProgress = Math.min(1, Math.max(0, (progress - 0.56) / 0.16));
-    visual.style.setProperty('--video-expansion', expansionProgress.toFixed(4));
-    hero.classList.toggle('is-full-bleed', expansionProgress >= 0.995);
-
-    // Once full-height, stretch only horizontally to remove the side gaps.
-    // This is numeric and continuous, so there is no object-fit jump.
-    const stretchProgress = Math.min(1, Math.max(0, (progress - 0.72) / 0.07));
-    const heroRatio = hero.clientWidth / Math.max(hero.clientHeight, 1);
-    const videoRatio = (video.videoWidth || 16) / Math.max(video.videoHeight || 9, 1);
-    const finalStretch = Math.max(1, heroRatio / videoRatio);
-    const horizontalStretch = 1 + ((finalStretch - 1) * stretchProgress);
-    visual.style.setProperty('--video-stretch', horizontalStretch.toFixed(5));
-
-    // Scroll-controlled entrance after the video has finished scaling.
-    // The last portion of the shell is intentionally a hold range.
-    const copyProgress = Math.min(1, Math.max(0, (progress - 0.80) / 0.07));
-    const mediaProgress = Math.min(1, Math.max(0, (progress - 0.81) / 0.08));
-    const ctaProgress = Math.min(1, Math.max(0, (progress - 0.84) / 0.06));
-    hero.style.setProperty('--copy-opacity', copyProgress.toFixed(4));
-    hero.style.setProperty('--copy-x', `${((1 - copyProgress) * -170).toFixed(2)}px`);
-    hero.style.setProperty('--cta-opacity', ctaProgress.toFixed(4));
-    hero.style.setProperty('--cta-y', `${((1 - ctaProgress) * 90).toFixed(2)}px`);
-    if (sideImage) {
-      const topLeft = 100 - (78 * mediaProgress);
-      const bottomLeft = 100 - (100 * mediaProgress);
-      sideImage.style.opacity = mediaProgress.toFixed(4);
-      sideImage.style.clipPath = `polygon(${topLeft.toFixed(2)}% 0,100% 0,100% 100%,${bottomLeft.toFixed(2)}% 100%)`;
-    }
-
-    const delta = targetTime - displayedTime;
-    displayedTime += Math.abs(delta) < 0.004 ? delta : delta * smoothing;
-    displayedTime = Math.min(Math.max(displayedTime, 0), safeMax);
-    try {
-      if (!video.seeking && Math.abs(video.currentTime - displayedTime) > 0.008) {
-        video.currentTime = displayedTime;
-      }
-    } catch (err) {
-      // A rejected seek should never kill the loop: skip this frame's write and retry next frame.
-    }
-    if (!cueHidden && displayedTime > 0.05) {
-      cueHidden = true;
-      cue?.classList.add('is-hidden');
-    }
-
-    if (loopActive) rafId = requestAnimationFrame(animateVideoTime);
-  }
-
-  function startLoop() {
-    if (loopActive) return;
-    loopActive = true;
-    rafId = requestAnimationFrame(animateVideoTime);
-  }
-
-  function stopLoop() {
-    loopActive = false;
-    cancelAnimationFrame(rafId);
-  }
-
-  function enableInteraction() {
-    ready = true;
-    visual.classList.add('is-ready');
-    visual.setAttribute('aria-busy', 'false');
-    loading.textContent = '';
-    const duration = video.duration || 10;
-    const safeMax = Math.max(duration - 0.05, 0);
-    displayedTime = shouldSkipIntro
-      ? safeMax
-      : Math.min(getProgress() * safeMax, safeMax);
-    video.currentTime = displayedTime;
-    startLoop();
-  }
-
-  video.addEventListener('loadedmetadata', () => {
-    if (shouldSkipIntro) {
-      video.pause();
-      return;
-    }
-    if (reducedMotion) {
-      video.currentTime = video.duration || 10;
-      visual.classList.add('is-ready');
-      visual.setAttribute('aria-busy', 'false');
-      loading.textContent = '';
-      return;
-    }
-    video.pause();
-    video.currentTime = 0.001;
-  }, { once: true });
-
-  video.addEventListener('loadeddata', () => {
-    if (shouldSkipIntro) return;
-    if (!reducedMotion && !ready) {
-      video.pause();
-      video.currentTime = 0;
-      enableInteraction();
-    }
-  }, { once: true });
-
-  video.addEventListener('error', () => {
-    loading.textContent = 'The painting preview could not be loaded.';
-    visual.setAttribute('aria-busy', 'false');
-  }, { once: true });
-
-
-  function skipToCompletedHero(forceFinalFrame = false) {
-    const shellTop = window.scrollY + shell.getBoundingClientRect().top;
-    const runway = Math.max(shell.offsetHeight - window.innerHeight, 1);
-    if (forceFinalFrame) {
-      const safeMax = Math.max((video.duration || 10) - 0.05, 0);
-      displayedTime = safeMax;
-      if (Number.isFinite(video.duration) && video.duration > 0) {
-        video.currentTime = safeMax;
-      }
-    }
-    skipHeroButton?.classList.add('is-hidden');
-    cue?.classList.add('is-hidden');
-    cueHidden = true;
-    window.scrollTo({ top: shellTop + (runway * 0.91), behavior: 'auto' });
-    requestAnimationFrame(() => {
-      if (ready) animateVideoTime();
-    });
-  }
-
-  skipHeroButton?.addEventListener('click', () => skipToCompletedHero(false));
-
-  if (shouldSkipIntro && !window.location.hash) {
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    startLoop();
-    requestAnimationFrame(() => requestAnimationFrame(() => skipToCompletedHero(true)));
-  }
-  window.addEventListener('pageshow', (event) => {
-    if (!event.persisted) return;
-    let returningFromInternalPage = false;
-    try {
-      returningFromInternalPage = sessionStorage.getItem('paintEventsIntroSeen') === '1';
-    } catch (error) {
-      returningFromInternalPage = true;
-    }
-    if (!returningFromInternalPage) return;
-    shouldSkipIntro = true;
-    video.pause();
-    video.style.visibility = 'hidden';
-    visual.style.background = '#0b2858';
-    visual.classList.add('is-ready', 'is-skip-final');
-    ready = true;
-    window.addEventListener('scroll', scheduleHeroMagnet, { passive: true });
-    startLoop();
-    requestAnimationFrame(() => skipToCompletedHero(true));
-  });
-
-  window.addEventListener('pagehide', () => {
-    stopLoop();
-    clearTimeout(magnetTimer);
-    window.removeEventListener('scroll', scheduleHeroMagnet);
-  });
-}
-
-
-const miniGalleryTrack = document.querySelector('.mini-gallery-track');
-if (miniGalleryTrack && !miniGalleryTrack.dataset.loopReady) {
-  const originalSet = miniGalleryTrack.querySelector('.mini-gallery-set');
-  if (originalSet) {
-    for (let copyIndex = 0; copyIndex < 3; copyIndex += 1) {
-      const clone = originalSet.cloneNode(true);
-      clone.setAttribute('aria-hidden', 'true');
-      clone.querySelectorAll('img').forEach((image) => {
-        image.alt = '';
-        image.loading = 'eager';
-      });
-      miniGalleryTrack.appendChild(clone);
-    }
-
-    const syncGalleryLoop = () => {
-      const gap = parseFloat(getComputedStyle(miniGalleryTrack).columnGap) || 0;
-      const distance = originalSet.getBoundingClientRect().width + gap;
-      miniGalleryTrack.style.setProperty('--mini-gallery-shift', `-${distance}px`);
-    };
-
-    requestAnimationFrame(syncGalleryLoop);
-    window.addEventListener('load', syncGalleryLoop, { once: true });
-    if ('ResizeObserver' in window) {
-      new ResizeObserver(syncGalleryLoop).observe(originalSet);
-    }
-  }
-  miniGalleryTrack.dataset.loopReady = 'true';
-}
-
-const contentMotionTargets = document.querySelectorAll([
-  '.trust-strip .container',
-  '.experiences .section-heading',
-  '.experiences .experience-card',
-  '.details-image',
-  '.details-content > h2',
-  '.details-content .benefit-grid article',
-  '.estimator-intro',
-  '.estimator-card',
-  '.corporate-media',
-  '.corporate-copy',
-  '.real-events .section-heading',
-  '.large-quote',
-  '.gallery-main',
-  '.mini-gallery',
-  '.about-copy',
-  '.faq-layout > *',
-  '.final-cta-inner'
-].join(','));
-if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  contentMotionTargets.forEach((item, index) => {
-    item.classList.add('scroll-motion-section');
-    item.style.setProperty('--motion-delay', `${(index % 4) * 70}ms`);
-  });
-  const contentMotionObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('scroll-motion-visible');
-        contentMotionObserver.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
-  contentMotionTargets.forEach((item) => contentMotionObserver.observe(item));
-} else {
-  contentMotionTargets.forEach((item) => {
-    item.classList.add('scroll-motion-section', 'scroll-motion-visible');
-  });
-}
-initializeScrollVideo();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

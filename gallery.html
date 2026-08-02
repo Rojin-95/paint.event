@@ -4,127 +4,61 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gallery | Paint Events</title>
-  <meta name="description" content="Explore real Paint Events celebrations, team-building experiences, private parties, and creative setups across Southern California.">
+  <meta name="description" content="Ten collections of real Paint Events bookings across Southern California â€” team building, birthdays, bridal and baby showers, kids, pets, picnics and styled setups.">
   <meta name="theme-color" content="#071f4a">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260730-64">
-  <link rel="stylesheet" href="gallery.css?v=20260730-2">
-  <script src="gallery.js?v=20260730-1" defer></script>
+  <link rel="stylesheet" href="site-theme.css?v=20260802-16">
+  <link rel="stylesheet" href="gallery.css?v=20260802-2">
+  <script src="gallery-data.js?v=20260802-3" defer></script>
+  <script src="gallery.js?v=20260802-2" defer></script>
+<script src="scroll-reveal.js?v=20260802-1" defer></script>
 </head>
 <body class="gallery-page">
-  <a class="skip-link" href="#gallery-grid">Skip to gallery</a>
-  <header class="site-header gallery-header is-visible scrolled logo-landed" id="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="index-updated.html?skipIntro=1" aria-label="Paint Events home">
-        <img src="assets/images/paint-events-logo-transparent.png" alt="" width="58" height="58">
-        <span>Paint<br>Events</span>
-      </a>
-      <nav class="desktop-nav" aria-label="Primary navigation">
-        <a href="index-updated.html#experiences">Services</a>
-        <a class="is-current" href="gallery.html" aria-current="page">Gallery</a>
-        <a href="index-updated.html#about">About</a>
-        <a href="index-updated.html#faq">FAQ</a>
-      </nav>
-      <a class="button button-primary header-cta" href="paint-events-booking-v2.html">Book Your Event <span aria-hidden="true">&nearr;</span></a>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="gallery-mobile-menu" aria-label="Open menu"><span></span><span></span><span></span></button>
-    </div>
-    <nav class="mobile-menu" id="gallery-mobile-menu" aria-label="Mobile navigation">
-      <a href="index-updated.html#experiences">Services</a>
-      <a href="gallery.html" aria-current="page">Gallery</a>
-      <a href="index-updated.html#about">About</a>
-      <a href="index-updated.html#faq">FAQ</a>
-      <a class="button button-primary" href="paint-events-booking-v2.html">Book Your Event</a>
-    </nav>
-  </header>
+  <a class="skip-link" href="#gallery-view">Skip to gallery</a>
+  <script src="components/navbar.js?v=20260802-3"></script>
 
   <main>
     <section class="gallery-hero">
-      <div class="gallery-hero-paint" aria-hidden="true"></div>
+      <div class="gallery-hero-collage" aria-hidden="true">
+        <figure class="collage-card collage-card-main"><img src="assets/images/hero-gallery.jpg" alt="Guests painting colourful canvases together at an outdoor table" fetchpriority="high"></figure>
+      </div>
       <div class="container gallery-hero-grid">
         <div class="gallery-hero-copy">
           <p class="eyebrow">Real people. Real paint. Real connection.</p>
           <h1>Every canvas<br>holds a <span>story.</span></h1>
-          <p>Browse moments from birthdays, team events, private gatherings, and the thoughtful setups that make each experience feel effortless.</p>
-          <a class="gallery-scroll-link" href="#gallery-grid">Explore the gallery <span aria-hidden="true">&darr;</span></a>
-        </div>
-        <div class="gallery-hero-collage" aria-label="Featured Paint Events moments">
-          <figure class="collage-card collage-card-main"><img src="assets/images/event-gallery-2.jpg" alt="Paint Events guests sharing their finished paintings"></figure>
-          <figure class="collage-card collage-card-top"><img src="assets/images/event-adults-2026.png" alt="Adults enjoying a guided painting event"></figure>
-          <figure class="collage-card collage-card-bottom"><img src="assets/images/event-kids-2026.png" alt="Children participating in a Paint Events experience"></figure>
+          <div class="button-row hero-actions">
+            <a class="button gallery-scroll-link" href="#gallery">Explore the gallery <span aria-hidden="true">&#8595;</span></a>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="gallery-browser" aria-labelledby="gallery-title">
+    <section class="gallery-browser" id="gallery" aria-labelledby="gh-title">
       <div class="container">
-        <div class="gallery-heading">
-          <div><p class="eyebrow">Choose a moment</p><h2 id="gallery-title">Made to celebrate<br><span>every kind of gathering.</span></h2></div>
-          <p class="gallery-count" aria-live="polite"><strong id="visible-count">12</strong> moments</p>
-        </div>
-        <div class="gallery-filter-wrap">
-          <div class="gallery-filters" role="toolbar" aria-label="Filter gallery by event type">
-            <button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">All</button>
-            <button class="filter-button" type="button" data-filter="birthday" aria-pressed="false">Birthday Party</button>
-            <button class="filter-button" type="button" data-filter="team" aria-pressed="false">Team Building</button>
-            <button class="filter-button" type="button" data-filter="together" aria-pressed="false">Get Together</button>
-            <button class="filter-button" type="button" data-filter="mothers-day" aria-pressed="false">Mother&rsquo;s Day</button>
-            <button class="filter-button" type="button" data-filter="bridal" aria-pressed="false">Bridal Shower Party</button>
-            <button class="filter-button" type="button" data-filter="setup" aria-pressed="false">Setup</button>
+        <div class="gallery-heading" id="gallery-heading">
+          <div class="gallery-heading__text">
+            <p class="eyebrow" id="gh-eyebrow">Choose a moment</p>
+            <h2 id="gh-title">Made to celebrate<br><span>every kind of gathering.</span></h2>
+            <p class="gallery-heading__blurb" id="gh-blurb">Every photo below is from a real Paint Events booking across Southern California. Pick the kind of day you are planning.</p>
+          </div>
+          <div class="gallery-heading__aside">
+            <button class="gallery-back" type="button" id="gallery-back" hidden>All collections</button>
+            <p class="gallery-count" aria-live="polite"><strong id="gh-count">10</strong><span id="gh-count-label"> collections</span></p>
           </div>
         </div>
+      </div>
 
-        <div class="gallery-grid" id="gallery-grid">
-          <button class="gallery-card gallery-card-tall" type="button" data-category="birthday" data-title="Birthday Party" data-src="assets/images/event-adults-2026.png">
-            <img src="assets/images/event-adults-2026.png" alt="Adults painting together at a birthday celebration" loading="lazy">
-            <span class="gallery-card-meta"><small>Celebration</small><strong>Birthday Party</strong></span>
-          </button>
-          <button class="gallery-card gallery-card-wide" type="button" data-category="team" data-title="Team Building" data-src="assets/images/event-corporate.png">
-            <img src="assets/images/event-corporate.png" alt="Canvases arranged for a team painting experience" loading="lazy">
-            <span class="gallery-card-meta"><small>Connection</small><strong>Team Building</strong></span>
-          </button>
-          <button class="gallery-card" type="button" data-category="together" data-title="Get Together" data-src="assets/images/event-gallery-2.jpg">
-            <img src="assets/images/event-gallery-2.jpg" alt="Guests together with completed paintings" loading="lazy">
-            <span class="gallery-card-meta"><small>Friends &amp; family</small><strong>Get Together</strong></span>
-          </button>
-          <button class="gallery-card" type="button" data-category="mothers-day" data-title="Mother's Day" data-src="assets/images/event-gallery-1.jpg">
-            <img src="assets/images/event-gallery-1.jpg" alt="A joyful guided painting gathering" loading="lazy">
-            <span class="gallery-card-meta"><small>Shared memory</small><strong>Mother&rsquo;s Day</strong></span>
-          </button>
-          <button class="gallery-card gallery-card-tall" type="button" data-category="bridal" data-title="Bridal Shower Party" data-src="assets/images/event-hero.jpg">
-            <img src="assets/images/event-hero.jpg" alt="Guests painting together at a private event" loading="lazy">
-            <span class="gallery-card-meta"><small>Before the big day</small><strong>Bridal Shower Party</strong></span>
-          </button>
-          <button class="gallery-card gallery-card-wide" type="button" data-category="setup" data-title="Setup" data-src="assets/images/corporate-painting-outdoor.png">
-            <img src="assets/images/corporate-painting-outdoor.png" alt="Outdoor easels and art supplies prepared for guests" loading="lazy">
-            <span class="gallery-card-meta"><small>We handle the details</small><strong>Setup</strong></span>
-          </button>
-          <button class="gallery-card" type="button" data-category="team" data-title="Team Building" data-src="assets/images/event-corporate.jpg">
-            <img src="assets/images/event-corporate.jpg" alt="A creative team event setup" loading="lazy">
-            <span class="gallery-card-meta"><small>Better team time</small><strong>Team Building</strong></span>
-          </button>
-          <button class="gallery-card" type="button" data-category="birthday" data-title="Birthday Party" data-src="assets/images/nasim-art-coaching.jpg">
-            <img src="assets/images/nasim-art-coaching.jpg" alt="Art materials ready for a birthday painting experience" loading="lazy">
-            <span class="gallery-card-meta"><small>Make a wish</small><strong>Birthday Party</strong></span>
-          </button>
-          <button class="gallery-card gallery-card-tall" type="button" data-category="setup" data-title="Setup" data-src="assets/images/event-corporate.png">
-            <img src="assets/images/event-corporate.png" alt="A complete mobile painting studio setup" loading="lazy">
-            <span class="gallery-card-meta"><small>Ready before guests arrive</small><strong>Setup</strong></span>
-          </button>
-          <button class="gallery-card" type="button" data-category="together" data-title="Get Together" data-src="assets/images/event-adults-2026.png">
-            <img src="assets/images/event-adults-2026.png" alt="Friends enjoying time together while painting" loading="lazy">
-            <span class="gallery-card-meta"><small>Create together</small><strong>Get Together</strong></span>
-          </button>
-          <button class="gallery-card gallery-card-wide" type="button" data-category="mothers-day" data-title="Mother's Day" data-src="assets/images/event-kids-2026.png">
-            <img src="assets/images/event-kids-2026.png" alt="A family-friendly creative gathering" loading="lazy">
-            <span class="gallery-card-meta"><small>Made with love</small><strong>Mother&rsquo;s Day</strong></span>
-          </button>
-          <button class="gallery-card" type="button" data-category="bridal" data-title="Bridal Shower Party" data-src="assets/images/event-gallery-1.jpg">
-            <img src="assets/images/event-gallery-1.jpg" alt="A private group painting celebration" loading="lazy">
-            <span class="gallery-card-meta"><small>Something memorable</small><strong>Bridal Shower Party</strong></span>
-          </button>
+      <div class="gallery-filterbar" id="gallery-filterbar">
+        <div class="container">
+          <div class="filter-rail" id="filter-rail" role="toolbar" aria-label="Filter the gallery by collection"></div>
         </div>
+      </div>
+
+      <div class="container">
+        <div class="gallery-view" id="gallery-view"></div>
       </div>
     </section>
 
@@ -134,7 +68,7 @@
         <p class="eyebrow light">Your event belongs here</p>
         <h2>Ready to make the next<br>great memory?</h2>
         <div class="button-row">
-          <a class="button button-light" href="paint-events-booking-v2.html">Book Your Event</a>
+          <a class="button button-light" href="paint-events-booking-v2.html">Start a request</a>
           <a class="button button-ghost" href="mailto:info@paint.events?subject=Paint%20Events%20Gallery%20Question">Ask a question</a>
         </div>
       </div>
@@ -144,22 +78,43 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-brand">
-        <a class="brand brand-light" href="index-updated.html?skipIntro=1"><img src="assets/images/paint-events-logo-transparent.png" alt="" width="58" height="58"><span>Paint<br>Events</span></a>
+        <a class="brand brand-light" href="index.html?skipIntro=1"><img src="assets/images/paint-events-logo-transparent.png" alt="" width="58" height="58"><span>Paint<br>Events</span></a>
         <p>A professionally guided mobile art experience that helps people relax, connect, and create.</p>
       </div>
-      <div><h3>Events</h3><a href="index-updated.html#corporate">Corporate</a><a href="index-updated.html#experiences">Private Events</a><a href="index-updated.html#experiences">Kids &amp; Schools</a></div>
-      <div><h3>Company</h3><a href="index-updated.html#about">About</a><a href="gallery.html">Gallery</a><a href="index-updated.html#faq">FAQ</a><a href="paint-events-booking-v2.html">Booking</a></div>
+      <div><h3>Events</h3><a href="services/corporate-team-building/index.html">Corporate</a><a href="services/index.html">Private Events</a><a href="services/index.html">Kids &amp; Schools</a></div>
+      <div><h3>Company</h3><a href="about/index.html">About</a><a href="gallery.html">Gallery</a><a href="faq/index.html">FAQ</a><a href="paint-events-booking-v2.html">Booking</a></div>
       <div><h3>Southern California</h3><p>Los Angeles based</p><a href="tel:+19497489000">(949) 748-9000</a><a href="mailto:info@paint.events">info@paint.events</a></div>
     </div>
-    <div class="container footer-bottom"><span>&copy; 2026 Paint Events</span><div><a href="index-updated.html#faq">Privacy</a><a href="index-updated.html#faq">Terms</a><a href="index-updated.html#faq">Cancellation</a><a href="index-updated.html#faq">Accessibility</a></div></div>
+    <div class="container footer-bottom"><span>&copy; 2026 Paint Events</span><div><a href="faq/index.html">Privacy</a><a href="faq/index.html">Terms</a><a href="faq/index.html">Cancellation</a><a href="faq/index.html">Accessibility</a></div></div>
   </footer>
 
-  <dialog class="gallery-lightbox" id="gallery-lightbox">
-    <button class="lightbox-close" type="button" aria-label="Close image">&times;</button>
-    <img id="lightbox-image" src="" alt="">
-    <p id="lightbox-title"></p>
+  <dialog class="gallery-lightbox" id="gallery-lightbox" aria-label="Photo viewer">
+    <div class="lightbox-bar">
+      <p class="lightbox-caption" id="lightbox-caption"></p>
+      <button class="lightbox-btn" type="button" id="lightbox-close" aria-label="Close photo viewer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="lightbox-stage">
+      <img id="lightbox-image" src="" alt="">
+    </div>
+    <button class="lightbox-btn lightbox-nav lightbox-nav--prev" type="button" id="lightbox-prev" aria-label="Previous photo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <button class="lightbox-btn lightbox-nav lightbox-nav--next" type="button" id="lightbox-next" aria-label="Next photo">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
   </dialog>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 

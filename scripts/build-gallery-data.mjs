@@ -1,0 +1,88 @@
+/* Rebuilds gallery-data.js from the photo library.
+ *
+ *   node scripts/build-gallery-data.mjs
+ *
+ * Reads every file in assets/images/gallery-library, looks its collection up in
+ * scripts/gallery-classification.js and records its intrinsic pixel size, which
+ * is what lets gallery.js compute justified rows without waiting on downloads.
+ *
+ * Requires ffprobe on PATH (part of ffmpeg) to read image dimensions.
+ * Fails loudly if a photo is unclassified or classified twice.
+ */
+import { execFileSync } from 'node:child_process';
+import { readdirSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { CLASSIFICATION } from './gallery-classification.js';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const libraryDir = join(root, 'assets/images/gallery-library');
+
+/* Order here is the order collections appear on the page. The CSS bento rhythm
+   makes slots 4 and 7 double width, so the two photos that read best cropped
+   panoramic are placed in those positions. */
+const CATEGORIES = [
+  { id: 'together',    label: 'Get Together',        eyebrow: 'Friends & family',     cover: 'img-2278.jpg', blurb: 'Wine, laughter and a canvas each — the easiest way to turn an ordinary evening into a story.' },
+  { id: 'birthday',    label: 'Birthday Party',      eyebrow: 'Make a wish',          cover: 'img-1973.jpg', blurb: 'Balloons, cake and a room of small artists who will not stop talking about it.' },
+  { id: 'kids',        label: 'Kids & Schools',      eyebrow: 'Little hands',         cover: 'img-2093.jpg', blurb: 'Backyards and classrooms where the mess is the point and every canvas goes home on the fridge.' },
+  { id: 'team',        label: 'Team Building',       eyebrow: 'Better team time',     cover: 'img-3255.jpg', blurb: 'Offices, warehouses and courtyards turned into studios. No skill required, only a room full of people.' },
+  { id: 'bridal',      label: 'Bridal Shower',       eyebrow: 'Before the big day',   cover: 'img-3809.jpg', blurb: 'A slower, sweeter kind of celebration — everyone painting the same thing, no two alike.' },
+  { id: 'pet',         label: 'Paint Your Pet',      eyebrow: 'From your photo',      cover: 'img-4792.jpg', blurb: 'Bring a picture of the dog. Leave with a portrait nobody expected you could make.' },
+  { id: 'picnic',      label: 'Picnic in the Park',  eyebrow: 'Outside, always',      cover: 'img-0604.jpg', blurb: 'Low tables, floor cushions and a blanket on the grass. Golden hour does most of the work.' },
+  { id: 'baby-shower', label: 'Baby Shower',         eyebrow: 'Something new',        cover: 'img-2950.jpg', blurb: 'Soft palettes, teddy bears on the table and a keepsake for the nursery wall.' },
+  { id: 'community',   label: 'Community & Seniors', eyebrow: 'Everyone welcome',     cover: 'img-3915.jpg', blurb: 'Senior living rooms, community centres and church halls — adapted, unhurried, genuinely joyful.' },
+  { id: 'setup',       label: 'The Setup',           eyebrow: 'Before guests arrive', cover: 'img-1438.jpg', blurb: 'Easels squared, palettes poured, aprons folded. We style the table before anyone walks in.' },
+];
+
+const files = readdirSync(libraryDir).filter(f => /\.(jpe?g|png|webp)$/i.test(f)).sort();
+
+const categoryOf = new Map();
+for (const [id, list] of Object.entries(CLASSIFICATION)) {
+  for (const file of list) {
+    if (categoryOf.has(file)) throw new Error(`${file} is classified as both ${categoryOf.get(file)} and ${id}`);
+    categoryOf.set(file, id);
+  }
+}
+
+const known = new Set(CATEGORIES.map(c => c.id));
+for (const id of Object.keys(CLASSIFICATION)) {
+  if (!known.has(id)) throw new Error(`classification uses unknown collection "${id}"`);
+}
+
+const unclassified = files.filter(f => !categoryOf.has(f));
+if (unclassified.length) throw new Error(`unclassified photos:\n  ${unclassified.join('\n  ')}`);
+
+const stale = [...categoryOf.keys()].filter(f => !files.includes(f));
+if (stale.length) throw new Error(`classified but missing from the library:\n  ${stale.join('\n  ')}`);
+
+const size = file => {
+  const out = execFileSync('ffprobe', [
+    '-v', 'error', '-select_streams', 'v:0',
+    '-show_entries', 'stream=width,height',
+    '-of', 'csv=p=0:s=x', join(libraryDir, file),
+  ], { encoding: 'utf8' }).trim();
+  const [w, h] = out.split('x').map(Number);
+  if (!w || !h) throw new Error(`could not read the size of ${file}`);
+  return { w, h };
+};
+
+const dims = new Map(files.map(f => [f, size(f)]));
+const items = files.map(f => ({ f, c: categoryOf.get(f), ...dims.get(f) }));
+
+const cats = CATEGORIES.map(c => {
+  const cover = dims.get(c.cover);
+  if (!cover) throw new Error(`cover ${c.cover} for "${c.id}" is not in the library`);
+  return { id: c.id, label: c.label, eyebrow: c.eyebrow, blurb: c.blurb, cover: c.cover, coverW: cover.w, coverH: cover.h };
+});
+
+writeFileSync(join(root, 'gallery-data.js'),
+  `/* Generated by scripts/build-gallery-data.mjs — do not edit by hand.
+   f = file, c = collection id, w/h = intrinsic pixel size (drives the justified-row layout). */
+window.GALLERY_BASE = "assets/images/gallery-library/";
+window.GALLERY_CATEGORIES = ${JSON.stringify(cats)};
+window.GALLERY_ITEMS = ${JSON.stringify(items)};
+`, 'utf8');
+
+console.log(`gallery-data.js: ${items.length} photos`);
+for (const c of CATEGORIES) console.log(`  ${c.id.padEnd(12)} ${items.filter(i => i.c === c.id).length}`);

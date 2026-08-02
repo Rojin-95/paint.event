@@ -6,7 +6,7 @@
 <title>Paint Events - Book Your Event</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
 <style>
 :root {
   --ink: #1C1B18;
@@ -227,13 +227,13 @@ body{font-family:"DM Sans","Segoe UI",sans-serif;background:
   radial-gradient(circle at 96% 70%,rgba(46,112,71,.09),transparent 25%),
   var(--surface);color:var(--ink);font-size:16px;line-height:1.6}
 .hdr{position:relative;z-index:10;min-height:86px;padding:.4rem max(24px,calc((100vw - 1280px)/2));background:rgba(255,253,248,.82);color:var(--ink);border-bottom:1px solid rgba(20,32,57,.1);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:0 8px 28px rgba(7,31,74,.06)}
-.hdr-logo{gap:.8rem}.hdr-logo-mark{width:62px;height:62px;background:transparent;border-radius:0}.hdr-logo-mark img{display:block;width:62px;height:62px;object-fit:contain}.hdr-logo-text{font-family:"Fraunces",Georgia,serif;font-size:1.22rem;font-weight:600;line-height:.92;color:#071f4a}.hdr-logo-text span{color:#2e7047}.hdr-sub{color:var(--muted);font-size:.78rem;font-weight:600;letter-spacing:.03em}
+.hdr-logo{gap:.8rem}.hdr-logo-mark{width:62px;height:62px;background:transparent;border-radius:0}.hdr-logo-mark img{display:block;width:62px;height:62px;object-fit:contain}.hdr-logo-text{font-family:"Manrope","Segoe UI",Arial,sans-serif;font-size:1.22rem;font-weight:600;line-height:.92;color:#071f4a}.hdr-logo-text span{color:#2e7047}.hdr-sub{color:var(--muted);font-size:.78rem;font-weight:600;letter-spacing:.03em}
 .wrap{max-width:1280px;padding:2.5rem 2rem 4rem;grid-template-columns:minmax(0,1fr) 330px;gap:2rem}
 .stepper{margin-bottom:2rem;border-color:rgba(20,32,57,.12);border-radius:20px;background:rgba(255,255,255,.76);box-shadow:0 12px 34px rgba(7,31,74,.07);backdrop-filter:blur(12px)}
 .stp{min-height:76px;padding:.72rem .55rem;background:rgba(248,247,242,.75);border-right-color:rgba(20,32,57,.1);color:var(--muted);font-size:.76rem;font-weight:700;letter-spacing:.01em;transition:background .25s ease,color .25s ease,box-shadow .25s ease}
-.stp .sn{font-family:"Fraunces",Georgia,serif;font-size:1.45rem;font-weight:600}.stp.active{background:linear-gradient(135deg,#124a98,#0a2a63);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -10px 22px rgba(0,20,68,.2)}.stp.done{background:linear-gradient(135deg,#edf5eb,#dfeede);color:#2e7047}
+.stp .sn{font-family:"Manrope","Segoe UI",Arial,sans-serif;font-size:1.45rem;font-weight:600}.stp.active{background:linear-gradient(135deg,#124a98,#0a2a63);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -10px 22px rgba(0,20,68,.2)}.stp.done{background:linear-gradient(135deg,#edf5eb,#dfeede);color:#2e7047}
 .fc,.confirm{padding:2rem;border:1px solid rgba(20,32,57,.11);border-radius:22px;background:rgba(255,255,255,.9);box-shadow:0 18px 50px rgba(7,31,74,.08);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.fc h2,.confirm h2,.art-dialog-head h3{font-family:"Fraunces",Georgia,serif;color:#071f4a;font-weight:600;letter-spacing:-.02em}.fc h2{font-size:clamp(1.65rem,2vw,2.05rem);line-height:1.15;margin-bottom:.35rem}.fc .sub{font-size:.9rem;color:var(--muted);margin-bottom:1.5rem}
+.fc h2,.confirm h2,.art-dialog-head h3{font-family:"Manrope","Segoe UI",Arial,sans-serif;color:#071f4a;font-weight:600;letter-spacing:-.02em}.fc h2{font-size:clamp(1.65rem,2vw,2.05rem);line-height:1.15;margin-bottom:.35rem}.fc .sub{font-size:.9rem;color:var(--muted);margin-bottom:1.5rem}
 .fg{margin-bottom:1.25rem}.fl{font-size:.83rem;font-weight:700;color:var(--ink);margin-bottom:.45rem}.fl .opt{background:var(--green-100,#e9f1e7);border-color:rgba(46,112,71,.16);color:#2e7047}
 input,select,textarea,.art-search{min-height:52px;padding:.75rem 1rem;border:1px solid rgba(20,32,57,.14);border-radius:12px;background:rgba(255,255,255,.86);color:var(--ink);font-size:.93rem;transition:border-color .2s ease,box-shadow .2s ease,background .2s ease}
 textarea{min-height:116px}input:focus,select:focus,textarea:focus,.art-search:focus{border-color:#124a98;box-shadow:0 0 0 4px rgba(18,74,152,.12);background:#fff}
@@ -246,7 +246,7 @@ textarea{min-height:116px}input:focus,select:focus,textarea:focus,.art-search:fo
 .btn-p:hover,.stripe-pay-btn:hover{transform:translateY(-2px);background:linear-gradient(135deg,#3279d9,#0a3987);box-shadow:inset 0 1px 0 rgba(255,255,255,.68),inset 0 -11px 24px rgba(0,20,68,.3),0 15px 28px rgba(7,31,74,.22)}
 .btn-p:active,.stripe-pay-btn:active{transform:translateY(2px);box-shadow:inset 0 8px 18px rgba(0,20,68,.28)}.btn-p:disabled{background:#c7ced8;border-color:#c7ced8;box-shadow:none;transform:none}
 .btn-s{min-height:54px;padding-inline:1.4rem;border:1px solid rgba(20,32,57,.16);background:rgba(255,255,255,.72);color:#071f4a;box-shadow:inset 0 1px 0 rgba(255,255,255,.8);backdrop-filter:blur(12px)}.btn-s:hover{background:#fff;border-color:rgba(18,74,152,.34)}
-.sum-panel{top:1.5rem;border:1px solid rgba(20,32,57,.12);border-radius:22px;background:rgba(255,255,255,.91);box-shadow:0 18px 50px rgba(7,31,74,.1);overflow:hidden;backdrop-filter:blur(14px)}.sum-hdr{padding:1.25rem 1.4rem;border-radius:0;background:linear-gradient(135deg,#0a2a63,#071f4a)}.sum-hdr h3{font-family:"Fraunces",Georgia,serif;font-size:1.25rem}.sum-hdr p{color:rgba(255,255,255,.65)}.sum-body{padding:1.35rem 1.4rem}.sum-total .stv,.rv-total .rv-tv,.conf-id{font-family:"Fraunces",Georgia,serif;color:#124a98}
+.sum-panel{top:1.5rem;border:1px solid rgba(20,32,57,.12);border-radius:22px;background:rgba(255,255,255,.91);box-shadow:0 18px 50px rgba(7,31,74,.1);overflow:hidden;backdrop-filter:blur(14px)}.sum-hdr{padding:1.25rem 1.4rem;border-radius:0;background:linear-gradient(135deg,#0a2a63,#071f4a)}.sum-hdr h3{font-family:"Manrope","Segoe UI",Arial,sans-serif;font-size:1.25rem}.sum-hdr p{color:rgba(255,255,255,.65)}.sum-body{padding:1.35rem 1.4rem}.sum-total .stv,.rv-total .rv-tv,.conf-id{font-family:"Manrope","Segoe UI",Arial,sans-serif;color:#124a98}
 .art-dialog{border-radius:24px}.art-dialog-body{background:#f8f7f2}.art-dialog-close{border-color:rgba(20,32,57,.14);color:#071f4a}
 .confirm{padding:3rem 2rem}.confirm h2{font-size:2rem}.conf-id{border-color:rgba(18,74,152,.32);background:#edf3fa;border-radius:999px}
 @media(max-width:760px){.hdr{min-height:72px;padding:.3rem 1rem}.hdr-logo-mark,.hdr-logo-mark img{width:54px;height:54px}.hdr-sub{display:none}.wrap{padding:1.25rem 1rem 6rem;gap:1rem}.summary-col{order:initial}.sum-panel{position:relative;top:0}.stepper{margin-bottom:1.25rem}.stp{min-height:66px;font-size:.65rem}.stp .sn{font-size:1.2rem}.fc{padding:1.25rem}.art-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.fnav{align-items:stretch;flex-direction:column-reverse}.btn,.btn-s{width:100%}}
@@ -285,21 +285,12 @@ body::after{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;back
 .sum-body{background:rgba(255,255,255,.12)}
 @supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){.fc,.confirm,.sum-panel,.art-item,.dur-opt,.tcalc,.conf-details,.stripe-mock{background:#f9faf8}}
 </style>
+  <link rel="stylesheet" href="site-theme.css?v=20260802-16">
+<script src="scroll-reveal.js?v=20260802-1" defer></script>
 </head>
 <body>
 
-<header class="hdr booking-header">
-  <div class="booking-nav-inner">
-    <a class="booking-brand" href="index-updated.html?skipIntro=1" aria-label="Paint Events home">
-      <img src="assets/images/paint-events-logo-transparent.png" alt="" width="72" height="72">
-      <span>Paint<br>Events</span>
-    </a>
-    <nav class="booking-desktop-nav" aria-label="Primary navigation"><a href="index-updated.html#experiences">Services</a><a href="gallery.html">Gallery</a><a href="index-updated.html#about">About</a><a href="index-updated.html#faq">FAQ</a></nav>
-    <a class="booking-header-cta" href="paint-events-booking-v2.html" aria-current="page">Book Your Event <span aria-hidden="true">&nearr;</span></a>
-    <button class="booking-menu-toggle" type="button" aria-expanded="false" aria-controls="booking-mobile-menu" aria-label="Open menu"><span></span><span></span><span></span></button>
-  </div>
-  <nav class="booking-mobile-menu" id="booking-mobile-menu" aria-label="Mobile navigation"><a href="index-updated.html#experiences">Services</a><a href="gallery.html">Gallery</a><a href="index-updated.html#about">About</a><a href="index-updated.html#faq">FAQ</a><a class="booking-header-cta" href="paint-events-booking-v2.html" aria-current="page">Book Your Event</a></nav>
-</header>
+<script src="components/navbar.js?v=20260802-3"></script>
 
 <div class="wrap">
 
@@ -1191,6 +1182,22 @@ updateSummary();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
