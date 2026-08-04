@@ -742,3 +742,409 @@ body.services-page .audience-selector {
 
 
 
+
+/* Booking page: clean canvas below the fixed site navigation. */
+body.booking-page { background: #fff !important; }
+body.booking-page::before,
+body.booking-page::after { content: none !important; display: none !important; }
+body.booking-page .wrap { padding-top: calc(var(--header-h, 92px) + 42px) !important; }
+@media (max-width: 760px) {
+  body.booking-page .wrap { padding-top: calc(var(--header-h, 76px) + 26px) !important; }
+}
+
+/* Branded pointer — desktop/fine pointer devices only. */
+@media (hover: hover) and (pointer: fine) {
+  html.paint-cursor-ready,
+  html.paint-cursor-ready body,
+  html.paint-cursor-ready body * { cursor: none !important; }
+  .paint-cursor {
+    position: fixed; z-index: 2147483647; left: 0; top: 0;
+    width: 64px; height: 64px; object-fit: contain; pointer-events: none;
+    opacity: 0; transform: translate(-15.2%, -74.7%) scale(.7); transform-origin: 15.2% 74.7%;
+    transition: opacity .12s ease;
+    will-change: left, top;
+  }
+  .paint-cursor.is-visible { opacity: 1; }
+  .paint-cursor.is-pressed { width: 64px; height: 64px; }
+}
+.site-footer .brand span { display: none !important; }
+
+
+
+
+
+
+
+/* Descender safety for every heading: prevents p, g, q, y, j from clipping. */
+h1, h2, h3, h4, h5, h6,
+.display-title, .booking-title,
+.section-heading, .section-heading h2,
+.page-hero h1, .gallery-hero-copy h1 {
+  overflow: visible !important;
+  padding-bottom: .11em !important;
+}
+h1, .display-title, .page-hero h1, .gallery-hero-copy h1 {
+  line-height: 1.03 !important;
+}
+h2, .booking-title, .section-heading h2 {
+  line-height: 1.09 !important;
+}
+h3 { line-height: 1.22 !important; }
+h4, h5, h6 { line-height: 1.28 !important; }
+
+/* Intro title visibility: brighter, cleaner gradient on the dark glass panel. */
+.intro-choice h2,
+#intro-title {
+  background: linear-gradient(105deg, #43a6ff 0%, #35bdd2 48%, #41d47b 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 800 !important;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .13)) drop-shadow(0 2px 5px rgba(0, 0, 0, .18));
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+/* Home mobile repair: booking journey + Relax details section. */
+@media (max-width: 680px) {
+  .booking-section .booking-flow {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+  .booking-section .booking-flow > div {
+    min-height: 124px !important;
+    padding: 22px 14px 18px 52px !important;
+    border-right: 1px solid rgba(255,255,255,.28) !important;
+    border-bottom: 1px solid rgba(255,255,255,.28) !important;
+  }
+  .booking-section .booking-flow > div:nth-child(2n) { border-right: 0 !important; }
+  .booking-section .booking-flow > div:nth-child(n+3) { border-bottom: 0 !important; }
+  .booking-section .booking-flow span { top: 22px !important; left: 16px !important; }
+  .booking-section .booking-flow strong {
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+  }
+  .booking-section .booking-flow p {
+    font-size: .78rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .details-section {
+    position: relative !important;
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    background: #071f4a !important;
+    isolation: isolate !important;
+  }
+  .details-section::before,
+  .details-section::after { content: none !important; display: none !important; }
+  .details-section .details-image {
+    position: absolute !important;
+    z-index: 1 !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: .5 !important;
+    background: url('assets-v1/details-palette-final.png') center / cover no-repeat !important;
+  }
+  .details-section .details-image::before {
+    content: '' !important;
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    width: auto !important;
+    background: linear-gradient(180deg, rgba(7,31,74,.78) 0%, rgba(7,31,74,.9) 48%, #071f4a 100%) !important;
+  }
+  .details-section .details-image::after { content: none !important; display: none !important; }
+  .details-section .details-content {
+    position: relative !important;
+    z-index: 2 !important;
+    display: block !important;
+    height: auto !important;
+    padding-top: 58px !important;
+    padding-bottom: 58px !important;
+  }
+  .details-section .details-content h2 {
+    width: 100% !important;
+    max-width: 480px !important;
+    margin: 0 0 34px !important;
+    font-size: clamp(2.25rem, 10.5vw, 3.35rem) !important;
+    line-height: 1.04 !important;
+  }
+  .details-section .benefit-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+  .details-section .benefit-grid article,
+  .details-section .benefit-grid article:first-child,
+  .details-section .benefit-grid article:last-child {
+    min-width: 0 !important;
+    min-height: 190px !important;
+    padding: 20px 16px !important;
+    border: 1px solid rgba(255,255,255,.14) !important;
+    border-radius: 18px !important;
+    background: rgba(6,27,66,.64) !important;
+    backdrop-filter: blur(6px) !important;
+  }
+  .details-section .line-icon { margin-bottom: 14px !important; }
+  .details-section .benefit-grid h3 {
+    margin: 0 0 8px !important;
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+  }
+  .details-section .benefit-grid p {
+    margin: 0 !important;
+    font-size: .82rem !important;
+    line-height: 1.52 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .details-section .benefit-grid { grid-template-columns: 1fr !important; }
+  .details-section .benefit-grid article,
+  .details-section .benefit-grid article:first-child,
+  .details-section .benefit-grid article:last-child { min-height: 0 !important; }
+}
+
+/* Show the requested Home hero description; keep older support/proof copy hidden. */
+.main-hero .main-hero-copy > .hero-lead {
+  display: block !important;
+  max-width: 620px !important;
+  margin: 8px 0 0 !important;
+  color: rgba(255,255,255,.9) !important;
+  font-size: clamp(1rem, 1.35vw, 1.22rem) !important;
+  font-weight: 500 !important;
+  line-height: 1.55 !important;
+}
+@media (max-width: 820px) {
+  .main-hero .main-hero-copy > .hero-lead {
+    max-width: 92% !important;
+    margin-top: 8px !important;
+    font-size: .98rem !important;
+  }
+}
+
+/* Home hero copy position */
+.main-hero .main-hero-copy { transform: none !important; }
+.main-hero .main-hero-copy > h1,
+.main-hero .main-hero-copy > .hero-lead { translate: 0 -10% !important; }
+/* End home hero copy position */
+
+
+
+
+/* Mobile booking flow: one horizontal row, labels only. */
+@media (max-width: 680px) {
+  .booking-section .booking-flow {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    border-radius: 18px !important;
+  }
+  .booking-section .booking-flow > div,
+  .booking-section .booking-flow > div:nth-child(2n),
+  .booking-section .booking-flow > div:nth-child(n+3) {
+    min-height: 94px !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+    padding: 44px 6px 16px !important;
+    border-right: 1px solid rgba(255,255,255,.3) !important;
+    border-bottom: 0 !important;
+    text-align: center !important;
+  }
+  .booking-section .booking-flow > div:last-child { border-right: 0 !important; }
+  .booking-section .booking-flow span {
+    top: 15px !important;
+    left: 50% !important;
+    width: 24px !important;
+    height: 24px !important;
+    transform: translateX(-50%) !important;
+  }
+  .booking-section .booking-flow strong {
+    margin: 0 !important;
+    font-size: clamp(.72rem, 3.2vw, .92rem) !important;
+    line-height: 1.15 !important;
+  }
+  .booking-section .booking-flow p { display: none !important; }
+}
+
+/* Corporate image visibility on mobile: keep media in normal document flow. */
+@media (max-width: 820px) {
+  .corporate-feature .corporate-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 34px !important;
+  }
+  .corporate-feature .corporate-media {
+    position: relative !important;
+    order: 1 !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 680px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+  }
+  .corporate-feature .corporate-media img {
+    position: relative !important;
+    inset: auto !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 4 / 4.5 !important;
+    object-fit: cover !important;
+    object-position: 52% center !important;
+    border-radius: 70px 18px 18px 18px !important;
+  }
+  .corporate-feature .corporate-copy { order: 2 !important; }
+  .corporate-feature .corporate-note {
+    right: 10px !important;
+    bottom: 14px !important;
+    max-width: calc(100% - 20px) !important;
+  }
+}
+
+
+/* Home hero: exact three-line title and desktop-equivalent mobile height. */
+.main-hero #home-title {
+  width: min(920px, 82%) !important;
+  max-width: none !important;
+}
+.main-hero #home-title .hero-line {
+  display: block !important;
+  white-space: nowrap !important;
+}
+.main-hero #home-title .hero-line-light {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+@media (max-width: 820px) {
+  .main-hero,
+  .main-hero .main-hero-inner {
+    min-height: var(--hero-min) !important;
+    height: auto !important;
+  }
+  .main-hero #home-title {
+    width: 100% !important;
+    font-size: clamp(1.8rem, 7.35vw, 2.65rem) !important;
+    line-height: 1.08 !important;
+  }
+}
+
+/* Nasim mobile frame: match the Team Time image language. */
+.about-mobile-kicker { display: none !important; }
+@media (max-width: 820px) {
+  .about-section .about-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding-top: 54px !important;
+  }
+  .about-section .about-mobile-kicker {
+    order: 1 !important;
+    display: block !important;
+    width: 100% !important;
+    margin: 0 0 16px !important;
+  }
+  .about-section .about-image {
+    order: 2 !important;
+    position: relative !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    clip-path: none !important;
+    overflow: hidden !important;
+    border-radius: 70px 18px 18px 18px !important;
+  }
+  .about-section .about-image img {
+    position: relative !important;
+    inset: auto !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 4 / 4.5 !important;
+    object-fit: cover !important;
+    object-position: center 24% !important;
+    border-radius: 70px 18px 18px 18px !important;
+    transform: none !important;
+  }
+  .about-section .about-copy {
+    order: 3 !important;
+    width: 100% !important;
+    padding-top: 44px !important;
+  }
+  .about-section .about-copy > .eyebrow { display: none !important; }
+}
+
+/* Final mobile Home hero height: never taller than the desktop composition. */
+@media (max-width: 820px) {
+  .main-hero {
+    height: clamp(620px, 78svh, 700px) !important;
+    min-height: 620px !important;
+    max-height: 700px !important;
+  }
+  .main-hero .main-hero-inner {
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+}
+
+
+/* Hard skip: remove the sticky intro so mobile lands exactly on Home hero. */
+.intro-scroll-shell.is-skipped { display: none !important; }
+
+/* Google review cards: three-line preview with an explicit expansion control. */
+.review-card .review-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+.review-card.is-expanded .review-text {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+.review-read-more {
+  display: none;
+  width: max-content;
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #9bd27b;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.review-card.has-overflow .review-read-more { display: inline-flex; }
+.reviews-marquee:has(.review-card.is-expanded) .reviews-grid { animation-play-state: paused !important; }
+
+/* Exact mobile viewport hero frame: fill the screen beneath navigation. */
+@media (max-width: 820px) {
+  .main-hero {
+    height: calc(100svh - var(--live-header-h, var(--header-h, 76px))) !important;
+    min-height: calc(100svh - var(--live-header-h, var(--header-h, 76px))) !important;
+    max-height: none !important;
+  }
+  .main-hero .main-hero-inner {
+    height: 100% !important;
+    min-height: 100% !important;
+  }
+}
+

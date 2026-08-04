@@ -49,6 +49,8 @@ function initializeOpeningVideo() {
   const progressWrap = document.querySelector('.intro-progress');
   const progressBar = document.querySelector('#intro-progress-bar');
   const completeLink = document.querySelector('#intro-complete');
+  const enterLink = document.querySelector('#enter-website');
+  const skipLink = document.querySelector('.skip-link');
   const flyingLogo = document.querySelector('#intro-logo-flight');
   const headerBrand = document.querySelector('.site-header .brand');
   if (!shell || !media || !video) return;
@@ -57,6 +59,8 @@ function initializeOpeningVideo() {
   let displayedTime = 0;
   let frame = 0;
   let ready = false;
+  let introSkipped = false;
+  let autoScrollFrame = 0;
 
   const getProgress = () => {
     if (prefersReducedMotion.matches) return 0;
@@ -67,7 +71,7 @@ function initializeOpeningVideo() {
 
   function render() {
     frame = 0;
-    const progress = getProgress();
+    const progress = introSkipped ? 1 : getProgress();
     choice?.classList.toggle('is-hidden', progress > .075);
     progressWrap?.classList.toggle('is-visible', progress > .075 && progress < .94);
     completeLink?.classList.toggle('is-visible', progress > .91);
@@ -138,11 +142,78 @@ function initializeOpeningVideo() {
   }, { once: true });
   if (video.readyState >= 1) markReady();
 
+  const finishIntroAndEnter = (event) => {
+    event?.preventDefault();
+    introSkipped = true;
+    if (frame) {
+      cancelAnimationFrame(frame);
+      frame = 0;
+    }
+    if (autoScrollFrame) {
+      cancelAnimationFrame(autoScrollFrame);
+      autoScrollFrame = 0;
+    }
+    const finishTime = Math.max((duration || video.duration || 0) - .05, 0);
+    displayedTime = finishTime;
+    video.pause();
+    if (finishTime) {
+      try { video.currentTime = finishTime; } catch (error) { /* Poster remains as fallback. */ }
+    }
+    choice?.classList.add('is-hidden');
+    progressWrap?.classList.remove('is-visible');
+    completeLink?.classList.add('is-visible');
+    if (progressBar) progressBar.style.transform = 'scaleX(1)';
+    flyingLogo?.classList.remove('is-active');
+    headerBrand?.style.setProperty('--brand-flight-opacity', '1');
+    const home = document.querySelector('#home');
+    if (home) {
+      try { history.replaceState(null, '', '#home'); } catch (error) { /* file:// can reject history writes. */ }
+      const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+      document.documentElement.style.scrollBehavior = 'auto';
+      const goToHero = () => {
+        const liveHeader = document.querySelector('.site-header');
+        const headerHeight = liveHeader?.getBoundingClientRect().height || 76;
+        document.documentElement.style.setProperty('--live-header-h', `${headerHeight}px`);
+        const heroTop = home.getBoundingClientRect().top + window.scrollY - headerHeight;
+        window.scrollTo({ top: Math.max(0, heroTop), left: 0, behavior: 'auto' });
+      };
+      goToHero();
+      requestAnimationFrame(() => requestAnimationFrame(goToHero));
+      window.setTimeout(() => {
+        goToHero();
+        document.documentElement.style.scrollBehavior = previousScrollBehavior;
+      }, 180);
+    }
+  };
+
+  enterLink?.addEventListener('click', finishIntroAndEnter);
+  completeLink?.addEventListener('click', finishIntroAndEnter);
+  skipLink?.addEventListener('click', finishIntroAndEnter);
   startButton?.addEventListener('click', () => {
-    const target = prefersReducedMotion.matches
-      ? document.querySelector('#home')?.offsetTop || shell.offsetTop + shell.offsetHeight
-      : shell.offsetTop + Math.min(window.innerHeight * .72, Math.max(shell.offsetHeight - window.innerHeight, 1));
-    window.scrollTo({ top: target, behavior: prefersReducedMotion.matches ? 'auto' : 'smooth' });
+    const startY = window.scrollY;
+    const targetY = shell.offsetTop + Math.max(shell.offsetHeight - window.innerHeight, 1);
+    if (prefersReducedMotion.matches) {
+      window.scrollTo(0, targetY);
+      return;
+    }
+    if (autoScrollFrame) cancelAnimationFrame(autoScrollFrame);
+    const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = 'auto';
+    const startedAt = performance.now();
+    const travelTime = 3200;
+    const animateScroll = (now) => {
+      const progress = Math.min(1, (now - startedAt) / travelTime);
+      const eased = progress < .5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      window.scrollTo({ top: startY + (targetY - startY) * eased, left: 0, behavior: 'auto' });
+      if (progress < 1) autoScrollFrame = requestAnimationFrame(animateScroll);
+      else {
+        autoScrollFrame = 0;
+        document.documentElement.style.scrollBehavior = previousScrollBehavior;
+      }
+    };
+    autoScrollFrame = requestAnimationFrame(animateScroll);
   });
 
   window.addEventListener('scroll', requestRender, { passive: true });
@@ -152,6 +223,14 @@ function initializeOpeningVideo() {
 }
 
 initializeOpeningVideo();
+function syncLiveHeaderHeight() {
+  const liveHeader = document.querySelector('.site-header');
+  if (!liveHeader) return;
+  document.documentElement.style.setProperty('--live-header-h', `${liveHeader.getBoundingClientRect().height}px`);
+}
+window.addEventListener('resize', syncLiveHeaderHeight, { passive: true });
+window.addEventListener('load', syncLiveHeaderHeight, { once: true });
+requestAnimationFrame(syncLiveHeaderHeight);
 
 /* Calendar and homepage request estimator */
 const calendarGrid = document.querySelector('#booking-calendar');
@@ -338,6 +417,37 @@ if ('IntersectionObserver' in window && !prefersReducedMotion.matches) {
   }, { threshold: .1 });
   revealTargets.forEach(target => observer.observe(target));
 }
+
+
+
+
+
+
+/* Three-line Google review previews. */
+function initializeReviewReadMore() {
+  document.querySelectorAll('.review-card').forEach((card) => {
+    const text = card.querySelector('p');
+    if (!text || card.querySelector('.review-read-more')) return;
+    text.classList.add('review-text');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'review-read-more';
+    button.textContent = 'Read more';
+    button.setAttribute('aria-expanded', 'false');
+    text.insertAdjacentElement('afterend', button);
+    const measure = () => card.classList.toggle('has-overflow', text.scrollHeight > text.clientHeight + 2 || card.classList.contains('is-expanded'));
+    button.addEventListener('click', () => {
+      const expanded = card.classList.toggle('is-expanded');
+      button.textContent = expanded ? 'Read less' : 'Read more';
+      button.setAttribute('aria-expanded', String(expanded));
+      measure();
+    });
+    requestAnimationFrame(measure);
+  });
+}
+initializeReviewReadMore();
+
+
 
 
 
