@@ -40,16 +40,32 @@ function todayInLosAngeles() {
 }
 
 function normalizeTime(value) {
-  const match = clean(value, 20).match(/^(0?[1-9]|1[0-2]):([0-5]\d)\s*(AM|PM)$/i);
-  if (!match) return null;
-  const hour12 = Number(match[1]);
-  const minute = Number(match[2]);
-  const suffix = match[3].toUpperCase();
-  const hour24 = (hour12 % 12) + (suffix === "PM" ? 12 : 0);
+  const input = clean(value, 20);
+  const twentyFourHour = input.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+  const twelveHour = input.match(/^(0?[1-9]|1[0-2]):([0-5]\d)\s*(AM|PM)$/i);
+  let hour24;
+  let minute;
+  if (twentyFourHour) {
+    hour24 = Number(twentyFourHour[1]);
+    minute = Number(twentyFourHour[2]);
+  } else if (twelveHour) {
+    const hour12 = Number(twelveHour[1]);
+    minute = Number(twelveHour[2]);
+    hour24 = (hour12 % 12) + (twelveHour[3].toUpperCase() === "PM" ? 12 : 0);
+  } else {
+    return null;
+  }
   if (hour24 < 8 || hour24 > 20 || (hour24 === 20 && minute !== 0)) return null;
+  const suffix = hour24 >= 12 ? "PM" : "AM";
+  const hour12 = hour24 % 12 || 12;
   return `${String(hour12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${suffix}`;
 }
 
+function timeToMinutes(normalizedTime) {
+  const match = normalizedTime.match(/^(\d{2}):(\d{2}) (AM|PM)$/);
+  const hour12 = Number(match[1]);
+  return (hour12 % 12) * 60 + Number(match[2]) + (match[3] === "PM" ? 720 : 0);
+}
 function quoteIdentifier(value) {
   return `"${value.replaceAll('"', '""')}"`;
 }
@@ -190,13 +206,14 @@ async function handlePost(context) {
   const insertColumns = insertKeys.map((key) => q(key)).join(", ");
   const placeholders = insertKeys.map(() => "?").join(", ");
   const insertValues = insertKeys.map((key) => valuesByKey[key]);
-  const conflictSql = `NOT EXISTS (SELECT 1 FROM bookings WHERE ${q("eventDate")} = ? AND ${q("startTime")} = ? AND (${q("status")} = 'confirmed' OR (${q("status")} = 'pending_payment' AND ${q("holdExpiresAt")} > ?)))`;
+  const storedStartMinutes = `((CAST(substr(${q("startTime")}, 1, 2) AS INTEGER) % 12) * 60 + CAST(substr(${q("startTime")}, 4, 2) AS INTEGER) + CASE WHEN upper(substr(${q("startTime")}, 7, 2)) = 'PM' THEN 720 ELSE 0 END)`;
+  const conflictSql = `NOT EXISTS (SELECT 1 FROM bookings WHERE ${q("eventDate")} = ? AND abs(${storedStartMinutes} - ?) < 240 AND (${q("status")} = 'confirmed' OR (${q("status")} = 'pending_payment' AND ${q("holdExpiresAt")} > ?)))`;
   const inserted = await context.env.DB.prepare(
     `INSERT INTO bookings (${insertColumns}) SELECT ${placeholders} WHERE ${conflictSql}`
-  ).bind(...insertValues, booking.eventDate, booking.startTime, createdAt).run();
+  ).bind(...insertValues, booking.eventDate, timeToMinutes(booking.startTime), createdAt).run();
 
   if (!inserted.meta?.changes) {
-    return json({ error: "That date and time is no longer available. Please select another time." }, 409);
+    return json({ error: "That start time is within four hours of another booking. Please select an earlier or later time." }, 409);
   }
 
   const origin = new URL(context.request.url).origin;

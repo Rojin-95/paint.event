@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paint Events - Book Your Event</title>
+<link rel="icon" href="assets/images/paint-events-logo-transparent.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
@@ -133,9 +134,9 @@ input.err,select.err{border-color:var(--red)}
 .art-select{width:100%;margin-top:8px;padding:7px 8px;border:1px solid var(--accent);border-radius:7px;background:#fff;color:var(--accent);font:700 11px/1.2 inherit;cursor:pointer}
 .art-select:hover,.art-item.sel .art-select{background:var(--accent);color:#fff}.art-item.sel .art-select::after{content:" OK"}
 .art-dialog{width:min(920px,calc(100% - 32px));max-height:92vh;padding:0;border:0;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.28);overflow:hidden;background:#fff}
-.art-dialog::backdrop{background:rgba(5,22,14,.72);backdrop-filter:blur(4px)}
+.art-dialog::backdrop{background:rgba(5,22,14,.72);backdrop-filter:blur(4px);cursor:pointer}
 .art-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--ink-faint)}
-.art-dialog-head h3{margin:0;font-size:18px}.art-dialog-close{width:42px;height:42px;border:1px solid var(--ink-faint);border-radius:50%;background:#fff;font-size:24px;cursor:pointer}
+.art-dialog-head h3{margin:0;font-size:18px}.art-dialog-close{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:96px;height:42px;padding:0 15px;border:1px solid var(--ink-faint);border-radius:999px;background:#fff;color:var(--ink);font:700 13px/1 inherit;cursor:pointer;box-shadow:0 5px 14px rgba(7,31,74,.08)}.art-dialog-close:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}.art-dialog-close-mark{font-size:21px;font-weight:400;line-height:1}
 .art-dialog-body{padding:20px;background:#f4f1ea;max-height:calc(92vh - 138px);overflow:auto;text-align:center}.art-dialog-body img{display:block;max-width:100%;height:auto;max-height:68vh;margin:auto;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
 .art-dialog-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px}.art-dialog-foot p{margin:0;color:var(--ink-muted);font-size:12px}
 @media(max-width:620px){.art-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:560px}.art-thumb{height:112px}.art-dialog-foot{align-items:stretch;flex-direction:column}.art-dialog-foot .btn{width:100%}}
@@ -214,7 +215,7 @@ input.err,select.err{border-color:var(--red)}
 .conf-detail-row span:last-child{font-weight:600;color:var(--ink)}
 .notif-box{background:var(--blue-light);border:1px solid var(--blue);border-radius:var(--rs);padding:.8rem 1rem;font-size:13px;color:#0d3d7a;margin-top:1rem;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.55;text-align:left}
 
-/* Paint Events visual system — homepage/gallery alignment */
+/* Paint Events visual system â€” homepage/gallery alignment */
 :root{
   --ink:#142039;--ink-mid:#3f4b63;--ink-muted:#687082;--ink-faint:rgba(20,32,57,.14);
   --surface:#fffdf8;--warm:#f8f7f2;--card:rgba(255,255,255,.92);
@@ -259,6 +260,9 @@ textarea{min-height:116px}input:focus,select:focus,textarea:focus,.art-search:fo
 .art-dialog-body img{max-height:none}
 .art-dialog-foot{position:relative;z-index:2;min-height:82px;padding:14px 20px;background:rgba(255,255,255,.97);border-top:1px solid rgba(20,32,57,.1);box-shadow:0 -10px 28px rgba(7,31,74,.08)}
 .art-dialog-foot .btn{flex:0 0 min(460px,52%);max-width:100%;margin-left:auto}
+/* Native dialogs render above body content, including the branded cursor. Keep a visible pointer in this UI layer. */
+html.paint-cursor-ready .art-dialog,html.paint-cursor-ready .art-dialog *{cursor:auto!important}
+html.paint-cursor-ready .art-dialog button,html.paint-cursor-ready .art-dialog .btn{cursor:pointer!important}
 @media(max-width:620px){.art-dialog[open]{width:calc(100vw - 24px);height:92svh;max-height:92svh}.art-dialog-body{padding:14px}.art-dialog-foot{align-items:stretch;min-height:auto}.art-dialog-foot .btn{flex:0 0 auto;width:100%;margin:0}}
 
 /* Large, soft paint splashes across the booking background */
@@ -284,7 +288,33 @@ body::after{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;back
 .stripe-mock{background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(242,245,250,.56))}
 .sum-body{background:rgba(255,255,255,.12)}
 @supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){.fc,.confirm,.sum-panel,.art-item,.dur-opt,.tcalc,.conf-details,.stripe-mock{background:#f9faf8}}
-</style>
+
+/* Mobile booking layout: keep every card inside the viewport and in normal flow. */
+@media(max-width:760px){
+  .wrap{display:block;width:100%;max-width:100%;padding-right:max(.75rem,env(safe-area-inset-right));padding-left:max(.75rem,env(safe-area-inset-left));overflow:visible}
+  .booking-main,.summary-col,.panel,.fc,.sum-panel,.stripe-section,.stripe-mock{width:100%;max-width:100%;min-width:0}
+  .summary-col{margin-top:1rem}
+  .stepper{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;max-width:100%;overflow:hidden}
+  .stp{display:flex;min-width:0;width:auto;min-height:68px;padding:.5rem .2rem;flex-direction:column;align-items:center;justify-content:center;border-right:1px solid rgba(20,32,57,.1);border-bottom:0;font-size:clamp(.52rem,2.35vw,.65rem);line-height:1.2;overflow-wrap:normal}
+  .stp:last-child{border-right:0}
+  .fr,.fg,.dur-opts,.art-grid,.art-item,.art-info{min-width:0;max-width:100%}
+  input,select,textarea{display:block;min-width:0;max-width:100%}
+  .art-grid{overflow-x:hidden;overscroll-behavior:contain}
+  .art-item{width:100%;transform:none}
+  .art-item:hover{transform:none}
+  .art-title,.art-cat,.fh,.price-info,.note-box,.short-note{overflow-wrap:anywhere}
+  .rv-row,.sum-row,.tcalc-row{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:.75rem;align-items:start}
+  .rv-row span:last-child,.sum-row .sv{max-width:none;min-width:0;overflow-wrap:anywhere;word-break:break-word}
+  .rv-total,.sum-total{gap:1rem;align-items:flex-start}
+  .stripe-pay-btn{white-space:normal;line-height:1.35}
+}
+@media(max-width:420px){
+  .fc{padding:1rem}
+  .art-grid{grid-template-columns:1fr}
+  .art-thumb{height:180px}
+  .chips{gap:6px}
+  .chip{max-width:100%;white-space:normal;text-align:center}
+}</style>
   <link rel="stylesheet" href="site-theme.css?v=20260803-17">
 <script src="scroll-reveal.js?v=20260802-1" defer></script>
   <script src="custom-cursor.js?v=20260803-3" defer></script>
@@ -319,14 +349,8 @@ body::after{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;back
           </div>
           <div class="fg">
             <label class="fl">Preferred Start Time <span class="req">*</span></label>
-            <select id="ev-time" onchange="onDateChange()">
-              <option value="">Select time...</option>
-              <option>8:00 AM</option><option>9:00 AM</option><option>10:00 AM</option>
-              <option>11:00 AM</option><option>12:00 PM</option><option>1:00 PM</option>
-              <option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option>
-              <option>5:00 PM</option><option>6:00 PM</option>
-            </select>
-            <div class="fh">Available 8:00 AM - 8:00 PM</div>
+            <input type="time" id="ev-time" min="08:00" max="20:00" step="300" onchange="onDateChange()" oninput="onDateChange()">
+            <div class="fh">Choose any preferred start time from 8:00 AM to 8:00 PM. Active bookings require a 4-hour gap between start times.</div>
           </div>
         </div>
 
@@ -383,15 +407,22 @@ body::after{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;back
         <div class="fg">
           <label class="fl">Event Address <span class="req">*</span></label>
           <input type="text" id="ev-addr" placeholder="Start typing your full address..." oninput="onAddrInput(this.value)" autocomplete="off">
+          <div class="fe" id="e-addr">Please enter the complete event address.</div>
+        </div>
+        <div class="fg">
+          <label class="fl">ZIP Code <span class="req">*</span></label>
+          <input type="text" id="ev-postal" placeholder="90291" inputmode="numeric" maxlength="10" oninput="onPostalInput(this.value)" autocomplete="postal-code">
+          <div class="fe" id="e-postal">Please enter a valid 5-digit ZIP Code.</div>
           <div class="fh">We serve all of Southern California. Distance calculated from Venice, CA.</div>
           <div class="spin" id="addr-spin">Calculating distance from Venice, CA...</div>
+          <div class="fe" id="e-travel" role="alert"></div>
         </div>
 
         <div class="tcalc" id="tcalc">
           <div class="tcalc-row"><span>Distance from studio (Venice, CA)</span><span id="tc-dist" class="v-green">-</span></div>
           <div class="tcalc-row"><span>Included free travel</span><span class="v-green">30 miles</span></div>
           <div class="tcalc-row"><span>Additional distance</span><span id="tc-extra">-</span></div>
-          <div class="tcalc-row tot"><span>Travel fee</span><span id="tc-fee">-</span></div>
+          <div class="tcalc-row tot"><span>Estimated travel fee</span><span id="tc-fee">-</span></div>
         </div>
       </div>
 
@@ -690,12 +721,12 @@ const paintings = [
 // =====================================================================
 const S = {
   step:1, date:'', time:'', type:'', guests:0, dur:90,
-  addr:'', distMi:0, travelFee:0,
+  addr:'', postal:'', distMi:0, travelFee:0, distanceReady:false,
   artId:null, artTitle:'', artCat:'', artColor:'',
   fn:'',ln:'',em:'',ph:'',co:'',notes:'',
   isShortNotice:false, discount:false
 };
-let activeFilter='All', addrTimer, availChecked=false;
+let activeFilter='All', addrTimer, availChecked=false, availabilityRequestId=0, travelRequestId=0;
 
 // =====================================================================
 // PRICING
@@ -713,53 +744,87 @@ function applyDiscount(sub, guests) {
 }
 
 // =====================================================================
-// AVAILABILITY CHECK (simulated)
+// LIVE AVAILABILITY CHECK - four-hour start-time separation
 // =====================================================================
-function checkAvailability() {
+function timeValueToMinutes(value) {
+  const twentyFour = String(value || '').match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+  if (twentyFour) return Number(twentyFour[1]) * 60 + Number(twentyFour[2]);
+  const twelveHour = String(value || '').match(/^(0?[1-9]|1[0-2]):([0-5]\d)\s*(AM|PM)$/i);
+  if (!twelveHour) return null;
+  return (Number(twelveHour[1]) % 12) * 60 + Number(twelveHour[2]) + (twelveHour[3].toUpperCase() === 'PM' ? 720 : 0);
+}
+
+function formatTimeValue(value) {
+  const minutes = typeof value === 'number' ? value : timeValueToMinutes(value);
+  if (minutes === null || minutes < 0 || minutes >= 1440) return '';
+  const hour24 = Math.floor(minutes / 60);
+  const minute = minutes % 60;
+  const suffix = hour24 >= 12 ? 'PM' : 'AM';
+  const hour12 = hour24 % 12 || 12;
+  return `${hour12}:${String(minute).padStart(2, '0')} ${suffix}`;
+}
+
+async function checkAvailability() {
   const date = document.getElementById('ev-date').value;
   const time = document.getElementById('ev-time').value;
-  if (!date || !time) return;
+  const selectedMinutes = timeValueToMinutes(time);
+  if (!date || selectedMinutes === null) { availChecked = false; return false; }
 
+  const requestId = ++availabilityRequestId;
   const today = new Date(); today.setHours(0,0,0,0);
   const ev = new Date(date + 'T12:00:00');
   const diffDays = Math.round((ev - today) / 86400000);
   S.isShortNotice = diffDays > 0 && diffDays < 5;
 
-  // Simulate availability: ~80% available, certain days busy
-  const seed = date.replace(/-/g,'') + time.replace(':','');
-  const n = seed.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
-  const avail = (n % 10) > 1; // ~80% chance available
-
   const box = document.getElementById('avail-box');
   box.className = 'avail-box show';
-  const dur = S.dur;
+  document.getElementById('avail-title').textContent = 'Checking availability...';
+  document.getElementById('avail-msg').textContent = 'Comparing this start time with current bookings.';
+  availChecked = false;
 
-  if (avail) {
-    if (S.isShortNotice) {
-      box.classList.add('avail-short');
-      document.getElementById('avail-title').textContent = 'Date available - short notice booking';
-      document.getElementById('avail-msg').textContent = 'Since this is within 5 days, full payment is required now. We\'ll confirm your instructor within 2 hours.';
-    } else {
-      box.classList.add('avail-ok');
-      document.getElementById('avail-title').textContent = 'Available Available - pay now to confirm';
-      document.getElementById('avail-msg').textContent = `We have availability on this date at ${time} for a ${dur}-minute event.`;
+  try {
+    const query = new URLSearchParams({date});
+    const response = await fetch(`/api/availability?${query.toString()}`, {cache:'no-store'});
+    const result = await response.json().catch(() => ({}));
+    if (requestId !== availabilityRequestId) return false;
+    if (!response.ok || !Array.isArray(result.blockedStartTimes)) throw new Error(result.error || 'Availability could not be checked.');
+
+    const separation = Number(result.minimumSeparationMinutes) || 240;
+    const blockedMinutes = result.blockedStartTimes.map(timeValueToMinutes).filter(Number.isFinite);
+    const conflict = blockedMinutes.find((bookedMinutes) => Math.abs(selectedMinutes - bookedMinutes) < separation);
+    if (conflict !== undefined) {
+      const previousAllowed = conflict - separation;
+      const nextAllowed = conflict + separation;
+      const options = [];
+      if (previousAllowed >= 8 * 60) options.push(`${formatTimeValue(previousAllowed)} or earlier`);
+      if (nextAllowed <= 20 * 60) options.push(`${formatTimeValue(nextAllowed)} or later`);
+      box.className = 'avail-box show avail-busy';
+      document.getElementById('avail-title').textContent = 'This start time is not available';
+      document.getElementById('avail-msg').textContent = options.length ? `Choose ${options.join(', ')}.` : 'Please choose another date.';
+      return false;
     }
+
+    box.className = `avail-box show ${S.isShortNotice ? 'avail-short' : 'avail-ok'}`;
+    document.getElementById('avail-title').textContent = S.isShortNotice ? 'Available - short notice booking' : 'Start time available';
+    document.getElementById('avail-msg').textContent = `Your preferred start time, ${formatTimeValue(selectedMinutes)}, currently has the required 4-hour gap.`;
     availChecked = true;
-  } else {
-    box.classList.add('avail-busy');
-    document.getElementById('avail-title').textContent = 'Not available Not available on this date & time';
-    document.getElementById('avail-msg').textContent = 'Please try a different date or time. We\'re available 7 days a week, 8 AM - 8 PM.';
-    availChecked = false;
+    return true;
+  } catch (error) {
+    if (requestId !== availabilityRequestId) return false;
+    box.className = 'avail-box show avail-busy';
+    document.getElementById('avail-title').textContent = 'Unable to verify availability';
+    document.getElementById('avail-msg').textContent = 'Please try again before continuing.';
+    return false;
   }
 }
 
-function onDateChange() {
+async function onDateChange() {
   S.date = document.getElementById('ev-date').value;
   S.time = document.getElementById('ev-time').value;
-  if (S.date && S.time) checkAvailability();
+  availChecked = false;
+  if (S.date && S.time) await checkAvailability();
   updateSummary();
 }
-
 // =====================================================================
 // DURATION
 // =====================================================================
@@ -783,28 +848,75 @@ function selType(el, type) {
 // =====================================================================
 function onAddrInput(val) {
   clearTimeout(addrTimer);
-  S.addr = val;
+  S.addr = val.trim();
+  S.distanceReady = false;
+  S.distMi = 0;
+  S.travelFee = 0;
   document.getElementById('tcalc').classList.remove('show');
-  if (val.length < 8) { updateSummary(); return; }
-  document.getElementById('addr-spin').classList.add('show');
-  addrTimer = setTimeout(()=>simulateDist(val), 900);
+  document.getElementById('e-travel').classList.remove('show');
+  scheduleTravelEstimate();
+  updateSummary();
 }
 
-function simulateDist(addr) {
-  // Venice, CA is origin. Simulate distance 5-90 miles.
-  const h = addr.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
-  const mi = 5 + (h % 86);
-  S.distMi = mi; S.travelFee = calcTravelFee(mi);
-  document.getElementById('addr-spin').classList.remove('show');
-  const extra = Math.max(0, mi - 30);
-  document.getElementById('tc-dist').textContent = mi + ' miles';
+function onPostalInput(val) {
+  clearTimeout(addrTimer);
+  S.postal = val.trim();
+  S.distanceReady = false;
+  S.distMi = 0;
+  S.travelFee = 0;
+  document.getElementById('tcalc').classList.remove('show');
+  document.getElementById('e-travel').classList.remove('show');
+  scheduleTravelEstimate();
+  updateSummary();
+}
+
+function scheduleTravelEstimate() {
+  if (S.addr.length < 8 || !/^\d{5}(?:-\d{4})?$/.test(S.postal)) return;
+  document.getElementById('addr-spin').classList.add('show');
+  addrTimer = setTimeout(calculateTravelEstimate, 650);
+}
+
+async function calculateTravelEstimate() {
+  const address = document.getElementById('ev-addr').value.trim();
+  const postalCode = document.getElementById('ev-postal').value.trim();
+  if (address.length < 8 || !/^\d{5}(?:-\d{4})?$/.test(postalCode)) return false;
+  const requestId = ++travelRequestId;
+  document.getElementById('addr-spin').classList.add('show');
+  document.getElementById('e-travel').classList.remove('show');
+  try {
+    const response = await fetch('/api/travel-estimate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({address, postalCode})
+    });
+    const result = await response.json().catch(()=>({}));
+    if (requestId !== travelRequestId) return false;
+    if (!response.ok) throw new Error(result.error || 'Distance could not be calculated.');
+    S.addr = address;
+    S.postal = postalCode;
+    S.distMi = Number(result.distanceMiles);
+    S.travelFee = Number(result.travelFeeEstimate);
+    S.distanceReady = Number.isFinite(S.distMi) && Number.isFinite(S.travelFee);
+    if (!S.distanceReady) throw new Error('Distance could not be calculated.');
+  } catch (error) {
+    if (requestId !== travelRequestId) return false;
+    S.distanceReady = false;
+    const errorEl = document.getElementById('e-travel');
+    errorEl.textContent = error.message || 'Distance could not be calculated. Please try again.';
+    errorEl.classList.add('show');
+    return false;
+  } finally {
+    if (requestId === travelRequestId) document.getElementById('addr-spin').classList.remove('show');
+  }
+  const extra = Math.max(0, S.distMi - 30);
+  document.getElementById('tc-dist').textContent = S.distMi + ' miles';
   document.getElementById('tc-extra').textContent = extra > 0 ? extra + ' miles' : '0 miles';
   const fee = S.travelFee;
   const feeEl = document.getElementById('tc-fee');
-  feeEl.textContent = fee === 0 ? '$0 - included!' : '$' + fee;
+  feeEl.textContent = fee === 0 ? '$0 - included!' : '$' + fee + ' (confirmed separately)';
   feeEl.className = fee === 0 ? 'v-green' : 'v-orange';
   document.getElementById('tcalc').classList.add('show');
   updateSummary();
+  return true;
 }
 
 // =====================================================================
@@ -847,14 +959,15 @@ function updateSummary() {
 
   const dateStr = S.date ? new Date(S.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}) : '';
   sv('s-date', dateStr);
-  sv('s-time', document.getElementById('ev-time')?.value);
+  sv('s-time', formatTimeValue(document.getElementById('ev-time')?.value));
   sv('s-type', S.type);
   sv('s-guests', S.guests >= 4 ? S.guests + ' guests' : '');
   sv('s-dur', S.dur ? S.dur + ' min' : '');
-  sv('s-loc', S.addr && S.addr.length > 5 ? S.addr.slice(0,26)+(S.addr.length>26?'...':'') : '');
+  const fullLocation = [S.addr,S.postal].filter(Boolean).join(', ');
+  sv('s-loc', fullLocation.length > 5 ? fullLocation.slice(0,26)+(fullLocation.length>26?'...':'') : '');
   sv('s-rate', rate > 0 ? '$'+rate+'/guest' : '');
   sv('s-sub', sub > 0 ? '$'+sub.toLocaleString() : '');
-  sv('s-travel', S.addr ? 'Confirmed separately' : '');
+  sv('s-travel', S.distanceReady ? (S.travelFee ? '$'+S.travelFee+' estimated' : '$0 included') : '');
   sv('s-total', total > 0 ? '$'+total.toLocaleString() : '-', '-');
 
   const dBadge = document.getElementById('s-disc');
@@ -940,6 +1053,16 @@ function closeArtPreview() {
   document.getElementById('art-dialog').close();
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const artDialog = document.getElementById('art-dialog');
+  artDialog.addEventListener('click', event => {
+    const rect = artDialog.getBoundingClientRect();
+    const outside = event.clientX < rect.left || event.clientX > rect.right ||
+      event.clientY < rect.top || event.clientY > rect.bottom;
+    if (outside) closeArtPreview();
+  });
+});
+
 function selArt(id) {
   const a = paintings.find(p=>p.id===id);
   S.artId=id; S.artTitle=a.title; S.artCat=a.cat; S.artColor=a.color;
@@ -958,12 +1081,12 @@ function fillReview() {
   const dateStr = S.date ? new Date(S.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}) : '-';
 
   document.getElementById('rv-date').textContent = dateStr;
-  document.getElementById('rv-time').textContent = S.time||'-';
+  document.getElementById('rv-time').textContent = formatTimeValue(S.time)||'-';
   document.getElementById('rv-type').textContent = S.type||'-';
   document.getElementById('rv-guests').textContent = guests + ' guests';
   document.getElementById('rv-dur').textContent = S.dur + ' minutes';
-  document.getElementById('rv-addr').textContent = S.addr||'-';
-  document.getElementById('rv-dist').textContent = S.distMi ? S.distMi + ' miles' : 'Not calculated';
+  document.getElementById('rv-addr').textContent = [S.addr,S.postal].filter(Boolean).join(', ')||'-';
+  document.getElementById('rv-dist').textContent = S.distanceReady ? S.distMi + ' miles' : 'Not calculated';
   document.getElementById('rv-art').textContent = S.artTitle||'-';
   document.getElementById('rv-artcat').textContent = S.artCat||'-';
   document.getElementById('rv-name').textContent = (document.getElementById('fn').value+' '+document.getElementById('ln').value).trim()||'-';
@@ -972,7 +1095,7 @@ function fillReview() {
   document.getElementById('rv-durp').textContent = S.dur + ' min';
   document.getElementById('rv-rate').textContent = '$'+rate+'/guest';
   document.getElementById('rv-sub').textContent = '$'+sub.toLocaleString();
-  document.getElementById('rv-travel').textContent = 'Confirmed separately';
+  document.getElementById('rv-travel').textContent = S.distanceReady ? (S.travelFee ? '$'+S.travelFee+' estimated - confirmed separately' : '$0 - included') : 'Not calculated';
 
   if (disc) {
     const saving = sub - discSub;
@@ -1014,20 +1137,26 @@ function goStep(n) {
   updateSummary();
 }
 
-function next1() {
+async function next1() {
   let ok = true;
   const date = document.getElementById('ev-date').value;
+  const time = document.getElementById('ev-time').value;
   const today = new Date().toISOString().split('T')[0];
   if (!date || date <= today) { document.getElementById('e-date').classList.add('show'); ok=false; }
   else document.getElementById('e-date').classList.remove('show');
+  if (!time || timeValueToMinutes(time) === null) { ok=false; }
   if (!S.type) { document.getElementById('e-type').classList.add('show'); ok=false; }
   const g = parseInt(document.getElementById('ev-guests').value);
   if (!g || g < 4) { document.getElementById('e-guests').classList.add('show'); ok=false; }
-  // Check availability flag
-  if (!availChecked) { checkAvailability(); }
-  const avBox = document.getElementById('avail-box');
-  if (avBox.classList.contains('avail-busy')) { ok=false; }
-  if (ok) goStep(2);
+  const address = document.getElementById('ev-addr').value.trim();
+  const postalCode = document.getElementById('ev-postal').value.trim();
+  if (address.length < 8) { document.getElementById('e-addr').classList.add('show'); ok=false; }
+  else document.getElementById('e-addr').classList.remove('show');
+  if (!/^\d{5}(?:-\d{4})?$/.test(postalCode)) { document.getElementById('e-postal').classList.add('show'); ok=false; }
+  else document.getElementById('e-postal').classList.remove('show');
+  if (ok && !S.distanceReady) ok = await calculateTravelEstimate();
+  if (ok && !availChecked) ok = await checkAvailability();
+  if (ok && availChecked) goStep(2);
 }
 
 function next2() {
@@ -1082,7 +1211,8 @@ async function submitPayment() {
     startTime: S.time,
     durationMinutes: S.dur,
     guestCount: S.guests,
-    eventLocation: S.addr,
+    eventLocation: [S.addr,S.postal].filter(Boolean).join(', '),
+    eventPostalCode: S.postal,
     company: document.getElementById('co').value.trim(),
     notes: document.getElementById('notes').value.trim(),
     artworkId: S.artId,
@@ -1141,7 +1271,7 @@ updateSummary();
 <dialog class="art-dialog" id="art-dialog" aria-labelledby="art-dialog-title">
   <div class="art-dialog-head">
     <h3 id="art-dialog-title">Painting steps</h3>
-    <button type="button" class="art-dialog-close" onclick="closeArtPreview()" aria-label="Close painting preview">x</button>
+    <button type="button" class="art-dialog-close" onclick="closeArtPreview()" aria-label="Close painting preview"><span class="art-dialog-close-mark" aria-hidden="true">&times;</span> Close</button>
   </div>
   <div class="art-dialog-body">
     <img id="art-dialog-image" src="" alt="">
@@ -1162,6 +1292,12 @@ updateSummary();
 </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
