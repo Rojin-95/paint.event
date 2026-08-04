@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -509,7 +509,7 @@ body::after{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;back
           <div class="rv-row"><span>Duration</span><span id="rv-durp">-</span></div>
           <div class="rv-row"><span>Per-guest rate</span><span id="rv-rate">-</span></div>
           <div class="rv-row"><span>Guest subtotal</span><span id="rv-sub">-</span></div>
-          <div class="rv-row"><span>Travel fee</span><span id="rv-travel">-</span></div>
+          <div class="rv-row"><span>Travel fee</span><span id="rv-travel">Confirmed separately</span></div>
           <div class="rv-row" id="rv-disc-row" style="display:none"><span id="rv-disc-label">Discount</span><span id="rv-disc" style="color:var(--green-ok)">-</span></div>
           <div class="rv-total">
             <span>Total Due Today</span>
@@ -518,7 +518,7 @@ body::after{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;back
           <div class="rv-disc" id="rv-disc-note" style="display:none"></div>
         </div>
 
-        <div class="note-box" id="rv-note">Included: Full payment is required to confirm your booking. Your event will be added to our calendar immediately after payment.</div>
+        <div class="note-box" id="rv-note"><strong>Travel fees, if applicable, will be confirmed separately.</strong> The amount due today includes only the guest subtotal and any applicable 60+ guest discount.</div>
         <div class="short-note" id="rv-short-note" style="display:none">Short notice: <strong>Short notice booking:</strong> Since your event is within 5 days, we'll confirm instructor availability and contact you within 2 hours of payment. If we can't accommodate your date, you'll receive a full refund.</div>
 
         <!-- Stripe Payment -->
@@ -527,26 +527,10 @@ body::after{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;back
             Secure Payment <span class="stripe-badge">Stripe</span>
           </div>
           <div class="stripe-mock">
-            <div class="stripe-row">
-              <label>Card Number</label>
-              <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)">
-            </div>
-            <div class="stripe-split">
-              <div class="stripe-row">
-                <label>Expiry</label>
-                <input type="text" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)">
-              </div>
-              <div class="stripe-row">
-                <label>CVC</label>
-                <input type="text" placeholder="123" maxlength="4">
-              </div>
-            </div>
-            <div class="stripe-row">
-              <label>Name on Card</label>
-              <input type="text" placeholder="Jane Smith">
-            </div>
-            <button class="stripe-pay-btn" onclick="submitPayment()" id="pay-btn">Pay <span id="pay-amount">-</span> & Confirm Booking</button>
-            <div class="stripe-secure">Secure: Secured by Stripe  -  SSL encrypted</div>
+            <p style="margin:0 0 1rem;color:var(--ink-mid);font-size:13px;line-height:1.55">You will enter payment details securely on Stripe Checkout. Travel fees, if applicable, will be confirmed separately.</p>
+            <button class="stripe-pay-btn" type="button" onclick="submitPayment()" id="pay-btn">Pay <span id="pay-amount">-</span> with Stripe</button>
+            <div class="fe" id="checkout-error" role="alert" aria-live="assertive" style="margin-top:.75rem"></div>
+            <div class="stripe-secure">Secure: You will be redirected to Stripe Checkout</div>
           </div>
         </div>
       </div>
@@ -554,22 +538,7 @@ body::after{content:"";position:fixed;z-index:0;inset:0;pointer-events:none;back
       <div class="fnav">
         <button class="btn btn-s" onclick="goStep(3)">&larr; Back</button>
       </div>
-    </div>
-
-    <!-- CONFIRMATION -->
-    <div class="confirm" id="confirm">
-      <div class="conf-icon">ART</div>
-      <h2>You're all set!</h2>
-      <div class="conf-id" id="conf-id">PE-2026-00000</div>
-      <p>Payment received. Your event is confirmed and has been added to the Paint Events calendar.</p>
-      <p style="font-size:13px">You'll receive a <strong>confirmation email</strong> and <strong>text message</strong> shortly. We'll also send reminders <strong>7 days</strong> and <strong>2 days</strong> before your event.</p>
-      <div class="conf-details" id="conf-details"></div>
-      <div class="notif-box">
-        Next: <strong>What happens next:</strong> Your event has been logged at paint.events calendar (managed via e4la.org). Your assigned instructor will receive full event details. You'll be contacted if any setup questions arise before the event day.
-      </div>
-    </div>
-
-  </div><!-- /booking-main -->
+    </div></div><!-- /booking-main -->
 
   <!-- SUMMARY PANEL -->
   <div class="summary-col">
@@ -868,7 +837,7 @@ function updateSummary() {
   const disc = hasDiscount(S.guests);
   const discSub = applyDiscount(sub, S.guests);
   const travel = S.travelFee || 0;
-  const total = discSub + travel;
+  const total = discSub;
 
   const sv = (id, val, ph) => {
     const el = document.getElementById(id); if (!el) return;
@@ -885,7 +854,7 @@ function updateSummary() {
   sv('s-loc', S.addr && S.addr.length > 5 ? S.addr.slice(0,26)+(S.addr.length>26?'...':'') : '');
   sv('s-rate', rate > 0 ? '$'+rate+'/guest' : '');
   sv('s-sub', sub > 0 ? '$'+sub.toLocaleString() : '');
-  sv('s-travel', S.distMi > 0 ? (travel===0?'$0 - free':'$'+travel) : '');
+  sv('s-travel', S.addr ? 'Confirmed separately' : '');
   sv('s-total', total > 0 ? '$'+total.toLocaleString() : '-', '-');
 
   const dBadge = document.getElementById('s-disc');
@@ -985,7 +954,7 @@ function fillReview() {
   const guests = S.guests; const rate = calcRate(guests, S.dur);
   const sub = rate * guests; const disc = hasDiscount(guests);
   const discSub = applyDiscount(sub, guests);
-  const travel = S.travelFee || 0; const total = discSub + travel;
+  const travel = S.travelFee || 0; const total = discSub;
   const dateStr = S.date ? new Date(S.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}) : '-';
 
   document.getElementById('rv-date').textContent = dateStr;
@@ -1003,7 +972,7 @@ function fillReview() {
   document.getElementById('rv-durp').textContent = S.dur + ' min';
   document.getElementById('rv-rate').textContent = '$'+rate+'/guest';
   document.getElementById('rv-sub').textContent = '$'+sub.toLocaleString();
-  document.getElementById('rv-travel').textContent = travel===0 ? '$0 - included' : '$'+travel;
+  document.getElementById('rv-travel').textContent = 'Confirmed separately';
 
   if (disc) {
     const saving = sub - discSub;
@@ -1094,44 +1063,54 @@ function fmtExp(el) {
 // =====================================================================
 // PAYMENT SUBMIT
 // =====================================================================
-function submitPayment() {
+async function submitPayment() {
   const btn = document.getElementById('pay-btn');
-  btn.textContent = 'Processing...';
+  const errorBox = document.getElementById('checkout-error');
+  if (btn.disabled) return;
+  errorBox.textContent = '';
+  errorBox.classList.remove('show');
+  const originalContent = btn.innerHTML;
+  btn.textContent = 'Opening secure checkout...';
   btn.disabled = true;
 
-  setTimeout(() => {
-    const bookingId = 'PE-2026-' + String(Math.floor(10000 + Math.random()*90000)).padStart(5,'0');
-    const guests = S.guests; const rate = calcRate(guests, S.dur);
-    const sub = rate * guests; const discSub = applyDiscount(sub, guests);
-    const total = discSub + (S.travelFee||0);
-    const dateStr = S.date ? new Date(S.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}) : '-';
+  const payload = {
+    customerName: `${document.getElementById('fn').value.trim()} ${document.getElementById('ln').value.trim()}`.trim(),
+    customerEmail: document.getElementById('em').value.trim(),
+    customerPhone: document.getElementById('ph').value.trim(),
+    eventType: S.type,
+    eventDate: S.date,
+    startTime: S.time,
+    durationMinutes: S.dur,
+    guestCount: S.guests,
+    eventLocation: S.addr,
+    company: document.getElementById('co').value.trim(),
+    notes: document.getElementById('notes').value.trim(),
+    artworkId: S.artId,
+    artworkTitle: S.artTitle,
+    artworkCategory: S.artCat
+  };
 
-    // Hide all form panels
-    document.querySelectorAll('.panel,.stepper').forEach(el=>el.style.display='none');
-    document.querySelector('.summary-col').style.display='none';
-
-    const conf = document.getElementById('confirm');
-    conf.classList.add('show');
-    document.getElementById('conf-id').textContent = bookingId;
-
-    document.getElementById('conf-details').innerHTML = `
-      <div class="conf-detail-row"><span>Booking ID</span><span>${bookingId}</span></div>
-      <div class="conf-detail-row"><span>Event</span><span>${S.type}</span></div>
-      <div class="conf-detail-row"><span>Date</span><span>${dateStr}</span></div>
-      <div class="conf-detail-row"><span>Time</span><span>${S.time}</span></div>
-      <div class="conf-detail-row"><span>Guests</span><span>${guests}</span></div>
-      <div class="conf-detail-row"><span>Duration</span><span>${S.dur} min</span></div>
-      <div class="conf-detail-row"><span>Painting</span><span>${S.artTitle}</span></div>
-      <div class="conf-detail-row"><span>Address</span><span>${S.addr}</span></div>
-      <div class="conf-detail-row"><span>Total Paid</span><span>$${total.toLocaleString()}</span></div>
-      <div style="margin-top:.6rem;font-size:11.5px;color:var(--ink-muted)">Confirmation sent to: ${document.getElementById('em').value}</div>
-    `;
-  }, 2000);
+  try {
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.checkoutUrl) {
+      throw new Error(result.error || 'Checkout could not be created. Please try again.');
+    }
+    window.location.assign(result.checkoutUrl);
+  } catch (error) {
+    errorBox.textContent = error.message || 'Checkout could not be created. Please try again.';
+    errorBox.classList.add('show');
+    btn.innerHTML = originalContent;
+    btn.disabled = false;
+  }
 }
 
 // =====================================================================
-// INIT
-// =====================================================================
+// INIT// =====================================================================
 renderArt(paintings);
 // Set min date to tomorrow
 const tmr = new Date(); tmr.setDate(tmr.getDate()+1);
