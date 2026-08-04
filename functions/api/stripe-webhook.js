@@ -1,4 +1,4 @@
-const SIGNATURE_TOLERANCE_SECONDS = 5 * 60;
+﻿const SIGNATURE_TOLERANCE_SECONDS = 5 * 60;
 const PAID_EVENTS = new Set(["checkout.session.completed", "checkout.session.async_payment_succeeded"]);
 const HANDLED_EVENTS = new Set([
   ...PAID_EVENTS,
@@ -40,16 +40,20 @@ function resolveBookingsSchema(columns) {
     guestCount: findColumn(columns, ["guest_count", "guests"]),
     location: findColumn(columns, ["event_location", "location", "address"]),
     artworkTitle: findColumn(columns, ["artwork_title", "painting_title"]),
+    artworkCategory: findColumn(columns, ["artwork_category", "painting_category"]),
     amountCents: findColumn(columns, ["amount_cents", "total_cents"]),
     company: findColumn(columns, ["company", "organization"]),
     notes: findColumn(columns, ["notes"]),
     customerEmailSentAt: findColumn(columns, ["customer_email_sent_at"]),
     ownerEmailSentAt: findColumn(columns, ["owner_email_sent_at"]),
+    calendarEventId: findColumn(columns, ["calendar_event_id"]),
+    timezone: findColumn(columns, ["timezone"]),
+    endTime: findColumn(columns, ["end_time"]),
   };
   const required = [
     "id", "stripeSessionId", "stripePaymentIntentId", "status", "paymentStatus", "confirmedAt", "updatedAt",
     "customerName", "customerEmail", "eventType", "eventDate", "startTime", "duration", "guestCount",
-    "location", "amountCents", "customerEmailSentAt", "ownerEmailSentAt",
+    "location", "amountCents", "customerEmailSentAt", "ownerEmailSentAt", "calendarEventId",
   ];
   const missing = required.filter((key) => !schema[key]);
   if (missing.length) throw new Error(`The bookings table is missing webhook/email columns: ${missing.join(", ")}`);
@@ -140,6 +144,8 @@ function bookingSelect(schema) {
     `${q("guestCount")} AS guestCount`, `${q("location")} AS eventLocation`, optional("artworkTitle", "artworkTitle"),
     `${q("amountCents")} AS amountCents`, optional("company", "company"), optional("notes", "notes"),
     `${q("customerEmailSentAt")} AS customerEmailSentAt`, `${q("ownerEmailSentAt")} AS ownerEmailSentAt`,
+    `${q("calendarEventId")} AS calendarEventId`, optional("artworkCategory", "artworkCategory"),
+    optional("timezone", "timezone"), optional("endTime", "endTime"),
   ].join(", ");
 }
 
@@ -257,7 +263,7 @@ async function deliverMissingEmails(context, schema, booking) {
   if (!booking.ownerEmailSentAt) {
     await sendResendEmail(context.env, {
       to: context.env.OWNER_EMAIL,
-      subject: `New paid Paint Events booking — ${safeSubjectValue(booking.eventDate)}`,
+      subject: `New paid Paint Events booking â€” ${safeSubjectValue(booking.eventDate)}`,
       html: ownerEmailHtml(booking),
       idempotencyKey: `paint-events-owner-${booking.bookingId}`,
     });
@@ -266,6 +272,190 @@ async function deliverMissingEmails(context, schema, booking) {
     booking.ownerEmailSentAt = sentAt;
   }
   return booking;
+}
+
+function requireCalendarConfiguration(env) {
+  const keys = ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_REFRESH_TOKEN", "GOOGLE_CALENDAR_ID"];
+  const missing = keys.filter((key) => typeof env[key] !== "string" || !env[key].trim());
+  if (missing.length) throw new Error("Google Calendar configuration is incomplete.");
+}
+
+function parseLocalTime(value) {
+  const normalized = String(value || "").trim();
+  let match = normalized.match(/^([01]\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?$/);
+  if (match) return Number(match[1]) * 60 + Number(match[2]);
+  match = normalized.match(/^(0?[1-9]|1[0-2]):([0-5]\d)(?::[0-5]\d)?\s*(AM|PM)$/i);
+  if (!match) return null;
+  let hour = Number(match[1]) % 12;
+  if (match[3].toUpperCase() === "PM") hour += 12;
+  return hour * 60 + Number(match[2]);
+}
+
+function validEventDate(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const parts = { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) };
+  const date = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+  if (date.getUTCFullYear() !== parts.year || date.getUTCMonth() !== parts.month - 1 || date.getUTCDate() !== parts.day) return null;
+  return date;
+}
+
+function localCalendarDateTime(date) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return date.getUTCFullYear() + "-" + pad(date.getUTCMonth() + 1) + "-" + pad(date.getUTCDate()) +
+    "T" + pad(date.getUTCHours()) + ":" + pad(date.getUTCMinutes()) + ":00";
+}
+
+function calendarDateTimes(booking) {
+  const date = validEventDate(booking.eventDate);
+  const startMinutes = parseLocalTime(booking.startTime);
+  if (!date || startMinutes === null) throw new Error("Booking date or start time is invalid for Calendar.");
+  const timezone = String(booking.timezone || "America/Los_Angeles").trim();
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(date);
+  } catch {
+    throw new Error("Booking timezone is invalid for Calendar.");
+  }
+
+  const duration = Number(booking.durationMinutes);
+  let elapsedMinutes;
+  if (Number.isInteger(duration) && duration > 0) {
+    elapsedMinutes = duration;
+  } else {
+    const endMinutes = parseLocalTime(booking.endTime);
+    if (endMinutes === null) throw new Error("Booking has no valid duration or end time for Calendar.");
+    elapsedMinutes = endMinutes - startMinutes;
+    if (elapsedMinutes <= 0) elapsedMinutes += 24 * 60;
+  }
+
+  const start = new Date(date.getTime() + startMinutes * 60 * 1000);
+  const end = new Date(start.getTime() + elapsedMinutes * 60 * 1000);
+  return {
+    start: { dateTime: localCalendarDateTime(start), timeZone: timezone },
+    end: { dateTime: localCalendarDateTime(end), timeZone: timezone },
+  };
+}
+
+async function deterministicCalendarEventId(bookingId) {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(bookingId))));
+  return "pe" + Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function calendarDescription(booking) {
+  const details = [
+    ["Booking ID", booking.bookingId],
+    ["Customer name", booking.customerName],
+    ["Customer email", booking.customerEmail],
+    ["Customer phone", booking.customerPhone],
+    ["Company", booking.company],
+    ["Event type", booking.eventType],
+    ["Artwork title", booking.artworkTitle],
+    ["Artwork category", booking.artworkCategory],
+    ["Guest count", booking.guestCount],
+    ["Duration", booking.durationMinutes ? booking.durationMinutes + " minutes" : null],
+    ["Amount paid", formatUsd(booking.amountCents)],
+    ["Notes", booking.notes],
+    ["Stripe Checkout Session ID", booking.stripeSessionId],
+  ];
+  return details
+    .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "")
+    .map(([label, value]) => label + ": " + String(value))
+    .join("\n");
+}
+
+async function googleAccessToken(env) {
+  requireCalendarConfiguration(env);
+  const body = new URLSearchParams({
+    client_id: env.GOOGLE_CLIENT_ID,
+    client_secret: env.GOOGLE_CLIENT_SECRET,
+    refresh_token: env.GOOGLE_REFRESH_TOKEN,
+    grant_type: "refresh_token",
+  });
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    result = null;
+  }
+  if (!response.ok || !result || typeof result.access_token !== "string" || !result.access_token) {
+    throw new Error("Google access token request failed with HTTP " + response.status + ".");
+  }
+  return result.access_token;
+}
+
+async function createOrRecoverCalendarEvent(env, booking) {
+  const accessToken = await googleAccessToken(env);
+  const eventId = await deterministicCalendarEventId(booking.bookingId);
+  const calendarId = encodeURIComponent(env.GOOGLE_CALENDAR_ID);
+  const eventUrl = "https://www.googleapis.com/calendar/v3/calendars/" + calendarId + "/events";
+  const dateTimes = calendarDateTimes(booking);
+  const eventBody = {
+    id: eventId,
+    summary: "Paint Event — " + String(booking.customerName),
+    location: booking.eventLocation || undefined,
+    description: calendarDescription(booking),
+    start: dateTimes.start,
+    end: dateTimes.end,
+    attendees: [{ email: booking.customerEmail, displayName: booking.customerName }],
+  };
+  const createResponse = await fetch(eventUrl + "?sendUpdates=all", {
+    method: "POST",
+    headers: { authorization: "Bearer " + accessToken, "content-type": "application/json" },
+    body: JSON.stringify(eventBody),
+  });
+
+  if (createResponse.status === 409) {
+    const recoveryResponse = await fetch(eventUrl + "/" + encodeURIComponent(eventId), {
+      headers: { authorization: "Bearer " + accessToken },
+    });
+    let recovered;
+    try {
+      recovered = await recoveryResponse.json();
+    } catch {
+      recovered = null;
+    }
+    if (!recoveryResponse.ok || !recovered || typeof recovered.id !== "string" || !recovered.id) {
+      throw new Error("Existing Google Calendar event could not be recovered.");
+    }
+    return recovered.id;
+  }
+
+  let created;
+  try {
+    created = await createResponse.json();
+  } catch {
+    created = null;
+  }
+  if (!createResponse.ok || !created || typeof created.id !== "string" || !created.id) {
+    throw new Error("Google Calendar event creation failed with HTTP " + createResponse.status + ".");
+  }
+  return created.id;
+}
+
+async function saveCalendarEventId(db, schema, booking, calendarEventId) {
+  const q = (key) => quoteIdentifier(schema[key]);
+  const result = await db.prepare(
+    "UPDATE bookings SET " + q("calendarEventId") + " = ?, " + q("updatedAt") + " = datetime('now') WHERE " +
+      q("id") + " = ? AND " + q("calendarEventId") + " IS NULL"
+  ).bind(calendarEventId, booking.bookingId).run();
+  if (!result.success) throw new Error("Unable to save the Google Calendar event ID.");
+  const refreshed = await fetchBooking(db, schema, booking.bookingId, booking.stripeSessionId);
+  if (!refreshed || !refreshed.calendarEventId) throw new Error("Google Calendar event ID could not be verified in D1.");
+  return refreshed;
+}
+
+async function ensureCalendarEvent(context, schema, booking) {
+  if (booking.status !== "confirmed" || booking.paymentStatus !== "paid") {
+    throw new Error("Booking was not confirmed before Calendar creation.");
+  }
+  if (booking.calendarEventId) return booking;
+  const calendarEventId = await createOrRecoverCalendarEvent(context.env, booking);
+  return saveCalendarEventId(context.env.DB, schema, booking, calendarEventId);
 }
 
 async function handlePaidEvent(context, event, session, bookingSchema, processedSchema, bookingId, sessionId) {
@@ -292,7 +482,8 @@ async function handlePaidEvent(context, event, session, bookingSchema, processed
 
   booking = await fetchBooking(db, bookingSchema, bookingId, sessionId);
   if (!booking || booking.status !== "confirmed" || booking.paymentStatus !== "paid") throw new Error("Paid booking confirmation could not be verified.");
-  await deliverMissingEmails(context, bookingSchema, booking);
+  booking = await deliverMissingEmails(context, bookingSchema, booking);
+  booking = await ensureCalendarEvent(context, bookingSchema, booking);
   await markEventProcessed(db, processedSchema, event.id, event.type, new Date().toISOString());
   return "processed-paid";
 }
@@ -379,3 +570,6 @@ export async function onRequest(context) {
     return json({ error: "Webhook processing failed." }, 500);
   }
 }
+
+
+
