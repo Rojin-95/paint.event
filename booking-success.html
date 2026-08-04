@@ -11,6 +11,59 @@
   </style>
 </head>
 <body>
-  <p>Payment received. We are confirming your booking.</p>
+  <p id="payment-status" role="status" aria-live="polite">Verifying your payment...</p>
+  <script>
+    (() => {
+      const statusElement = document.getElementById('payment-status');
+      const sessionId = new URLSearchParams(window.location.search).get('session_id') || '';
+      const deadline = Date.now() + 20000;
+      let timerId;
+
+      const show = (message) => {
+        statusElement.textContent = message;
+      };
+
+      const finish = (message) => {
+        if (timerId) window.clearTimeout(timerId);
+        show(message);
+      };
+
+      async function checkStatus() {
+        if (Date.now() >= deadline) {
+          finish('Your payment was received. Confirmation is still processing.');
+          return;
+        }
+
+        try {
+          const query = new URLSearchParams({session_id: sessionId});
+          const response = await fetch(`/api/booking-status?${query.toString()}`, {cache: 'no-store'});
+          if (response.ok) {
+            const booking = await response.json();
+            if (booking.status === 'confirmed' && booking.paymentStatus === 'paid') {
+              finish('Your payment was successful and your booking is confirmed.');
+              return;
+            }
+            if (booking.status === 'payment_failed' || booking.paymentStatus === 'failed') {
+              finish('Your payment could not be completed. Please return to the booking page and try again.');
+              return;
+            }
+            if (booking.status === 'expired') {
+              finish('This checkout session has expired. Please return to the booking page and start again.');
+              return;
+            }
+          }
+        } catch {
+          // Transient network errors are retried until the polling deadline.
+        }
+        timerId = window.setTimeout(checkStatus, 2000);
+      }
+
+      if (!/^cs_[A-Za-z0-9_]{8,250}$/.test(sessionId)) {
+        finish('We could not verify this payment session. Please contact Paint Events for assistance.');
+        return;
+      }
+      checkStatus();
+    })();
+  </script>
 </body>
 </html>
